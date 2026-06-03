@@ -1,0 +1,47 @@
+{
+  "name": "Interaction",
+  "type": "object",
+  "properties": {
+    "thread_id": {
+      "type": "string"
+    },
+    "sender_id": {
+      "type": "string"
+    },
+    "sender_handle": {
+      "type": "string"
+    },
+    "content": {
+      "type": "string"
+    },
+    "word_count": {
+      "type": "number",
+      "default": 0
+    },
+    "unique_word_ratio": {
+      "type": "number",
+      "default": 0
+    },
+    "sentiment_score": {
+      "type": "number",
+      "default": 0
+    },
+    "prompt_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "response_latency_ms": {
+      "type": "number",
+      "default": 0
+    },
+    "is_mock": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "thread_id",
+    "sender_id",
+    "content"
+  ]
+}

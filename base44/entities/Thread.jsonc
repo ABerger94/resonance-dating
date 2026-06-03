@@ -1,0 +1,74 @@
+{
+  "name": "Thread",
+  "type": "object",
+  "properties": {
+    "creator_id": {
+      "type": "string"
+    },
+    "joiner_id": {
+      "type": "string"
+    },
+    "creator_handle": {
+      "type": "string"
+    },
+    "joiner_handle": {
+      "type": "string"
+    },
+    "prompt_id": {
+      "type": "string"
+    },
+    "prompt_text": {
+      "type": "string"
+    },
+    "topic_tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "void",
+        "active",
+        "resonating",
+        "completed",
+        "decayed"
+      ],
+      "default": "void"
+    },
+    "resonance_state": {
+      "type": "string",
+      "enum": [
+        "locked",
+        "discovering",
+        "resonating"
+      ],
+      "default": "locked"
+    },
+    "resonance_score": {
+      "type": "number",
+      "default": 0
+    },
+    "last_activity": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "creator_prompt_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "joiner_prompt_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "is_mock": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "creator_id",
+    "prompt_text"
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "name": "UserProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the auth user ID"
+    },
+    "handle": {
+      "type": "string",
+      "description": "Anonymous display handle (e.g. SIGNAL_42)"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Real name \u2014 locked until score >= 25%"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Bio text \u2014 locked until score >= 50%"
+    },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Interest tags \u2014 locked until score >= 75%"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "Profile photo URL \u2014 locked until score >= 100%"
+    },
+    "tag_cloud": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Public topic tags visible from the Void (never locked)"
+    },
+    "is_mock": {
+      "type": "boolean",
+      "default": false,
+      "description": "True for seeded mock users"
+    },
+    "mock_id": {
+      "type": "string",
+      "description": "Stable ID for mock users"
+    }
+  },
+  "required": [
+    "handle"
+  ]
+}
