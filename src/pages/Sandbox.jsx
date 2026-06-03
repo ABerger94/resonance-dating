@@ -10,7 +10,8 @@ import DevToolbar from '@/components/resonance/DevToolbar';
 import useResonanceStore from '@/lib/resonanceStore';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccessThread, canUseAdminTools, mergeUnlockedProfileFields, sanitizePublicProfile } from '@/lib/security';
-import { ArrowLeft, Circle, Send, Terminal, ChevronRight, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Circle, Send, Terminal, ChevronRight, ChevronDown, AlertCircle } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 export default function Sandbox() {
   const { threadId } = useParams();
@@ -122,6 +123,16 @@ export default function Sandbox() {
   const handleSend = async () => {
     if (!inputText.trim() || sending) return;
     if (!isMock && !canAccessThread(thread, activeUser?.id)) return;
+    
+    // Check if user is verified
+    if (!isMock && activeUser?.email_verified !== true) {
+      toast({
+        title: "Email verification required",
+        description: "Please verify your email in Settings to send messages.",
+      });
+      return;
+    }
+    
     setSending(true);
 
     const content = inputText.trim();

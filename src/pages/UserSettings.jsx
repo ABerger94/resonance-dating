@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import useResonanceStore from '@/lib/resonanceStore';
 import { clampMatchRadiusMiles, resolveCoordinates, DEFAULT_MATCH_RADIUS_MILES } from '@/lib/location';
 import { clampAge, normalizeGenderPreference, normalizePreferenceAges, normalizeSex } from '@/lib/profilePreferences';
-import { LogOut, MapPin, Save, Settings as SettingsIcon, User } from 'lucide-react';
+import { LogOut, MapPin, Save, Settings as SettingsIcon, User, Mail, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function UserSettings() {
   const { user, logout } = useAuth();
@@ -26,6 +26,10 @@ export default function UserSettings() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
+  const [showVerifyForm, setShowVerifyForm] = useState(false);
+  const [verificationCode, setVerificationCode] = useState('');
+  const [verifying, setVerifying] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -72,6 +76,39 @@ export default function UserSettings() {
       setLoading(false);
     }
   };
+
+  const handleSendVerification = async () => {
+    setVerificationSent(true);
+    try {
+      await base44.auth.resendOtp(activeUser.email);
+    } catch (err) {
+      console.error('Failed to send verification:', err);
+    }
+  };
+
+  const handleVerify = async () => {
+    if (!verificationCode || verificationCode.length !== 6) {
+      setError('Please enter a valid 6-digit code');
+      return;
+    }
+    setVerifying(true);
+    setError('');
+    try {
+      const result = await base44.auth.verifyOtp({ email: activeUser.email, otpCode: verificationCode });
+      if (result?.access_token) {
+        base44.auth.setToken(result.access_token);
+      }
+      setShowVerifyForm(false);
+      setVerificationCode('');
+      setVerificationSent(false);
+    } catch (err) {
+      setError(err.message || 'Invalid verification code');
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  const isVerified = activeUser?.email_verified === true;
 
   const handleSave = async () => {
     if (!activeUser) return;
@@ -148,6 +185,83 @@ export default function UserSettings() {
                 ACCOUNT
               </div>
               <div className="text-sm text-foreground/80">{activeUser?.email || activeUser?.full_name || 'Signed in'}</div>
+              
+              {/* Email Verification Status */}
+              <div className="mt-3 pt-3 border-t" style={{ borderColor: 'hsl(var(--border))' }}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Mail size={12} className="text-muted-foreground" />
+                  <span className="text-xs tracking-widest text-muted-foreground">EMAIL VERIFICATION</span>
+                </div>
+                
+                {isVerified ? (
+                  <div className="flex items-center gap-2 text-xs text-success/80">
+                    <CheckCircle size={12} />
+                    <span>VERIFIED</span>
+                  </div>
+                ) : showVerifyForm ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-xs text-amber-500">
+                      <AlertCircle size={12} />
+                      <span>UNVERIFIED - LIMITED ACCESS</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        maxLength={6}
+                        placeholder="Enter 6-digit code"
+                        value={verificationCode}
+                        onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ''))}
+                        className="flex-1 bg-transparent border px-2 py-1 text-xs text-foreground outline-none focus:border-primary/30"
+                        style={{ borderColor: 'hsl(var(--border))', fontFamily: "'JetBrains Mono', monospace" }}
+                        autoFocus
+                      />
+                      <button
+                        onClick={handleVerify}
+                        disabled={verifying || verificationCode.length !== 6}
+                        className="px-3 py-1 border text-xs tracking-widest disabled:opacity-50"
+                        style={{ 
+                          borderColor: 'hsl(var(--border))',
+                          color: 'hsl(var(--primary))'
+                        }}
+                      >
+                        {verifying ? '...' : 'VERIFY'}
+                      </button>
+                    </div>
+                    {!verificationSent && (
+                      <button
+                        onClick={handleSendVerification}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Resend code
+                      </button>
+                    )}
+                    <button
+                      onClick={() => {
+                        setShowVerifyForm(false);
+                        setVerificationCode('');
+                        setVerificationSent(false);
+                      }}
+                      className="text-xs text-muted-foreground hover:underline"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-xs text-amber-500">
+                      <AlertCircle size={12} />
+                      <span>UNVERIFIED - LIMITED ACCESS</span>
+                    </div>
+                    <button
+                      onClick={() => setShowVerifyForm(true)}
+                      className="text-xs text-primary hover:underline"
+                    >
+                      Verify Email
+                    </button>
+                  </div>
+                )}
+              </div>
+              
               <Link
                 to="/profile"
                 className="inline-flex items-center text-xs tracking-widest text-primary hover:underline"

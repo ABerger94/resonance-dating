@@ -9,7 +9,8 @@ import VoidBubble from '@/components/resonance/VoidBubble';
 import useResonanceStore from '@/lib/resonanceStore';
 import { useAuth } from '@/lib/AuthContext';
 import { canUseAdminTools, isJoinableThread } from '@/lib/security';
-import { Circle, Plus, Radio, RefreshCw, X } from 'lucide-react';
+import { Circle, Plus, Radio, RefreshCw, X, AlertCircle } from 'lucide-react';
+import { toast } from '@/components/ui/use-toast';
 
 export default function Void() {
   const navigate = useNavigate();
@@ -91,6 +92,16 @@ export default function Void() {
 
   const handleCastThread = async () => {
     if (!selectedPrompt || !activeUser) return;
+    
+    // Check if user is verified
+    if (activeUser.email_verified !== true) {
+      toast({
+        title: "Email verification required",
+        description: "Please verify your email in Settings to cast threads.",
+      });
+      return;
+    }
+    
     setCasting(true);
     try {
       const promptText = useCustomText ? customText.trim() : selectedPrompt.text;
