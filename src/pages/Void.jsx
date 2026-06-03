@@ -9,7 +9,7 @@ import VoidBubble from '@/components/resonance/VoidBubble';
 import useResonanceStore from '@/lib/resonanceStore';
 import { useAuth } from '@/lib/AuthContext';
 import { canUseAdminTools, isJoinableThread } from '@/lib/security';
-import { Circle, Plus, Radio, RefreshCw, X, AlertCircle } from 'lucide-react';
+import { Circle, Plus, Radio, RefreshCw, X } from 'lucide-react';
 import { toast } from '@/components/ui/use-toast';
 
 export default function Void() {

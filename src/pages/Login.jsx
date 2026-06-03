@@ -41,13 +41,13 @@ export default function Login() {
       <div className="min-h-screen grid lg:grid-cols-[1.05fr_0.95fr]">
         <section className="flex min-h-[42vh] flex-col justify-between border-b border-border px-6 py-8 lg:min-h-screen lg:border-b-0 lg:border-r lg:px-12">
           <div className="flex items-center gap-3">
-            <ResonanceLogo size={42} color="white" />
+            <ResonanceLogo size={42} className="text-white [&_path]:stroke-white" color="currentColor" />
             <span className="font-mono text-sm font-bold tracking-[0.35em] text-white">RESONANCE</span>
           </div>
 
           <div className="max-w-xl space-y-5 py-12">
             <div className="flex items-center gap-3">
-              <ResonanceLogo size={72} color="white" />
+              <ResonanceLogo size={72} className="text-white [&_path]:stroke-white" color="currentColor" />
               <h1 className="text-5xl font-semibold tracking-tight text-white sm:text-6xl">Resonance</h1>
             </div>
             <p className="max-w-lg text-base leading-7 text-muted-foreground">

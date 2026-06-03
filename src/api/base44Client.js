@@ -16,28 +16,6 @@ const publicUser = (user) => {
   return safeUser;
 };
 
-function generateVerificationCode() {
-  return String(Math.floor(100000 + Math.random() * 900000));
-}
-
-async function sendVerificationEmail(email, code) {
-  const response = await fetch('/api/send-verification-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, code })
-  });
-  if (!response.ok) {
-    let message = 'Could not send verification code.';
-    try {
-      const body = await response.json();
-      message = body.details ? `${body.error || message} ${body.details}` : (body.error || message);
-    } catch {
-      // Keep the default message.
-    }
-    throw new Error(message);
-  }
-}
-
 const DEFAULT_USER = {
   id: 'local_user',
   email: 'local@resonance.app',
@@ -192,22 +170,21 @@ function createStandaloneClient() {
           error.status = 401;
           throw error;
         }
-        if (user.email_verified !== true) {
-          const error = new Error('Verify your email before logging in.');
-          error.status = 403;
-          error.code = 'email_not_verified';
-          throw error;
-        }
-        db.currentUser = publicUser(user);
+        const verifiedUser = user.email_verified === true ? user : {
+          ...user,
+          email_verified: true,
+          verification_code: undefined,
+          verification_expires_at: undefined
+        };
+        db.users[db.users.findIndex((item) => item.email === normalizedEmail)] = verifiedUser;
+        db.currentUser = publicUser(verifiedUser);
         writeDb(db);
-        return { access_token: `local_${user.id}` };
+        return { access_token: `local_${verifiedUser.id}` };
       },
 
       async register({ email, password }) {
         const db = readDb();
         const normalizedEmail = normalizeEmail(email);
-        const verificationCode = generateVerificationCode();
-        const verificationExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
         const existingIndex = db.users.findIndex((item) => item.email === normalizedEmail);
         const user = {
           ...(existingIndex >= 0 ? db.users[existingIndex] : {}),
@@ -216,19 +193,18 @@ function createStandaloneClient() {
           password,
           role: existingIndex >= 0 ? db.users[existingIndex].role : 'user',
           full_name: normalizedEmail.split('@')[0],
-          email_verified: false,
-          verification_code: verificationCode,
-          verification_expires_at: verificationExpiresAt
+          email_verified: true,
+          verification_code: undefined,
+          verification_expires_at: undefined
         };
         if (existingIndex >= 0) {
           db.users[existingIndex] = user;
         } else {
           db.users.push(user);
         }
-        db.currentUser = null;
+        db.currentUser = publicUser(user);
         writeDb(db);
-        await sendVerificationEmail(normalizedEmail, verificationCode);
-        return { ok: true, verification_required: true };
+        return { access_token: `local_${user.id}`, user: publicUser(user) };
       },
 
       async verifyOtp({ email, otpCode }) {
@@ -272,16 +248,15 @@ function createStandaloneClient() {
           error.status = 404;
           throw error;
         }
-        const verificationCode = generateVerificationCode();
         db.users[userIndex] = {
           ...db.users[userIndex],
-          email_verified: false,
-          verification_code: verificationCode,
-          verification_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+          email_verified: true,
+          verification_code: undefined,
+          verification_expires_at: undefined
         };
+        db.currentUser = publicUser(db.users[userIndex]);
         writeDb(db);
-        await sendVerificationEmail(normalizedEmail, verificationCode);
-        return { ok: true };
+        return { ok: true, access_token: `local_${db.users[userIndex].id}` };
       },
 
       async resetPasswordRequest() {

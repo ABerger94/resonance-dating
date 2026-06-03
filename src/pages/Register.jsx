@@ -5,10 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
-
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
-
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -26,21 +24,11 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      // Register may fail to send email - suppress error and proceed anyway
-      await base44.auth.register({ email, password }).catch(() => {});
-      // Auto-login after registration - ignore verification errors
-      try {
-        const loginResult = await base44.auth.loginViaEmailPassword(email, password);
-        if (loginResult?.access_token) {
-          base44.auth.setToken(loginResult.access_token);
-        }
-      } catch (loginErr) {
-        // Ignore email verification errors
-        if (loginErr.code !== 'email_not_verified' && !loginErr.message?.includes('verify')) {
-          throw loginErr;
-        }
+      const result = await base44.auth.register({ email, password });
+      if (result?.access_token) {
+        base44.auth.setToken(result.access_token);
       }
-      window.location.href = "/";
+      window.location.href = "/profile";
     } catch (err) {
       setError(err.message || "Registration failed");
     } finally {
@@ -57,6 +45,11 @@ export default function Register() {
       icon={UserPlus}
       title="Create your account"
       subtitle="Sign up to get started"
+      topContent={
+        <Link to="/login" className="inline-flex text-sm font-medium text-primary hover:underline">
+          Back to Login
+        </Link>
+      }
       footer={
         <>
           Already have an account?{" "}
