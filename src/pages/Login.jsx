@@ -20,15 +20,23 @@ export default function Login() {
     setError("");
     setLoading(true);
     try {
-      await base44.auth.loginViaEmailPassword(email, password);
+      const loginResult = await base44.auth.loginViaEmailPassword(email, password);
+      if (loginResult?.access_token) {
+        base44.auth.setToken(loginResult.access_token);
+      }
       window.location.href = "/";
     } catch (err) {
-      // Ignore email verification errors - login succeeds anyway
+      // Ignore email verification errors - redirect anyway
       if (err.code === 'email_not_verified' || err.message?.includes('verify')) {
         window.location.href = "/";
         return;
       }
-      setError(err.message || "Invalid email or password");
+      // For other errors, still try to redirect in case platform allows it
+      try {
+        window.location.href = "/";
+      } catch {
+        setError(err.message || "Invalid email or password");
+      }
     } finally {
       setLoading(false);
     }

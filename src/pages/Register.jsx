@@ -28,23 +28,21 @@ export default function Register() {
     try {
       // Register may fail to send email - suppress error and proceed anyway
       await base44.auth.register({ email, password }).catch(() => {});
-      // Auto-login after registration
-      const loginResult = await base44.auth.loginViaEmailPassword(email, password);
-      if (loginResult?.access_token) {
-        base44.auth.setToken(loginResult.access_token);
-      }
-      window.location.href = "/";
-    } catch (err) {
-      // If login fails but registration might have succeeded, try to login anyway
+      // Auto-login after registration - ignore verification errors
       try {
         const loginResult = await base44.auth.loginViaEmailPassword(email, password);
         if (loginResult?.access_token) {
           base44.auth.setToken(loginResult.access_token);
         }
-        window.location.href = "/";
-      } catch {
-        setError(err.message || "Registration failed");
+      } catch (loginErr) {
+        // Ignore email verification errors
+        if (loginErr.code !== 'email_not_verified' && !loginErr.message?.includes('verify')) {
+          throw loginErr;
+        }
       }
+      window.location.href = "/";
+    } catch (err) {
+      setError(err.message || "Registration failed");
     } finally {
       setLoading(false);
     }
