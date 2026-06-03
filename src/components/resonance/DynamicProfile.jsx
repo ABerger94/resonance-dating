@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { getUnlockedFields } from '@/lib/resonanceEngine';
 import GlitchText from './GlitchText';
-import { Lock, User, FileText, Tag, ImageIcon } from 'lucide-react';
+import { Circle, Lock, User, FileText, Tag, ImageIcon } from 'lucide-react';
 
-const REDACTED = '████████████████████';
+const REDACTED = 'REDACTED';
 
 function RedactedBlock({ label, icon: Icon }) {
   return (
@@ -13,42 +13,52 @@ function RedactedBlock({ label, icon: Icon }) {
         <span className="tracking-widest">{label}</span>
         <Lock size={8} />
       </div>
-      <div 
+      <div
         className="text-muted-foreground/20 font-mono select-none"
         style={{ fontSize: '11px', letterSpacing: '1px' }}
       >
-        {REDACTED}
+        <span className="inline-flex gap-1" aria-label={REDACTED}>
+          {Array.from({ length: 12 }).map((_, index) => (
+            <span key={index} className="h-2 w-4 bg-muted-foreground/20" />
+          ))}
+        </span>
       </div>
     </div>
   );
 }
 
-function UnlockedField({ label, icon: Icon, children, isNew, onAnimationDone }) {
+function UnlockedField({ label, icon: Icon, children, isNew }) {
   const [triggered, setTriggered] = useState(false);
 
   useEffect(() => {
     if (isNew) {
-      const t = setTimeout(() => setTriggered(true), 100);
-      return () => clearTimeout(t);
+      const timer = setTimeout(() => setTriggered(true), 100);
+      return () => clearTimeout(timer);
     }
   }, [isNew]);
 
   return (
-    <div 
+    <div
       className={`space-y-1 transition-all duration-500 ${isNew ? 'border border-primary/30 p-2 rounded' : ''}`}
       style={isNew ? { boxShadow: '0 0 8px rgba(14,165,233,0.15)' } : {}}
+      data-triggered={triggered}
     >
       <div className="flex items-center gap-1.5 text-primary/70" style={{ fontSize: '9px' }}>
         <Icon size={10} />
         <span className="tracking-widest">{label}</span>
-        {isNew && <span className="text-primary animate-pulse">● UNLOCKED</span>}
+        {isNew && (
+          <span className="inline-flex items-center gap-1 text-primary animate-pulse">
+            <Circle size={8} className="fill-current" />
+            UNLOCKED
+          </span>
+        )}
       </div>
       <div>{children}</div>
     </div>
   );
 }
 
-export default function DynamicProfile({ profile, score, threadId, previousScore = 0 }) {
+export default function DynamicProfile({ profile, score, previousScore = 0 }) {
   const unlocked = getUnlockedFields(score);
   const prevUnlocked = getUnlockedFields(previousScore);
   const photoUrls = Array.from(new Set([
@@ -69,7 +79,6 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
 
   return (
     <div className="space-y-4 font-mono text-sm">
-      {/* Handle — always visible */}
       <div className="space-y-1">
         <div className="flex items-center gap-1.5 text-muted-foreground/50" style={{ fontSize: '9px' }}>
           <User size={10} />
@@ -79,7 +88,6 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
         <div className="text-foreground font-bold tracking-widest">{profile.handle}</div>
       </div>
 
-      {/* Tag cloud — always visible */}
       {profile.tag_cloud && profile.tag_cloud.length > 0 && (
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-muted-foreground/50" style={{ fontSize: '9px' }}>
@@ -89,11 +97,11 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
           </div>
           <div className="flex flex-wrap gap-1">
             {profile.tag_cloud.map(tag => (
-              <span 
+              <span
                 key={tag}
                 className="px-1.5 py-0.5 text-xs border"
-                style={{ 
-                  borderColor: 'hsl(var(--border))', 
+                style={{
+                  borderColor: 'hsl(var(--border))',
                   color: 'hsl(215 20% 45%)',
                   fontSize: '10px'
                 }}
@@ -105,14 +113,12 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
         </div>
       )}
 
-      {/* Separator */}
       <div className="border-t border-dashed" style={{ borderColor: 'hsl(var(--border))' }} />
 
-      {/* NAME */}
       {unlocked.name ? (
-        <UnlockedField 
-          label="IDENTITY" 
-          icon={User} 
+        <UnlockedField
+          label="IDENTITY"
+          icon={User}
           isNew={isNewUnlock('name')}
         >
           <GlitchText
@@ -125,10 +131,9 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
         <RedactedBlock label="IDENTITY [25%]" icon={User} />
       )}
 
-      {/* BIO */}
       {unlocked.bio ? (
-        <UnlockedField 
-          label="BIO" 
+        <UnlockedField
+          label="BIO"
           icon={FileText}
           isNew={isNewUnlock('bio')}
         >
@@ -142,23 +147,21 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
         <RedactedBlock label="BIO [75%]" icon={FileText} />
       )}
 
-      {/* INTERESTS */}
       {unlocked.interests ? (
-        <UnlockedField 
-          label="INTERESTS" 
+        <UnlockedField
+          label="INTERESTS"
           icon={Tag}
           isNew={isNewUnlock('interests')}
         >
           <div className="flex flex-wrap gap-1 mt-1">
-            {profile.interests?.map((interest, i) => (
-              <span 
+            {profile.interests?.map((interest, index) => (
+              <span
                 key={interest}
                 className="px-1.5 py-0.5 text-xs border border-primary/30"
-                style={{ 
-                  color: '#10B981', 
+                style={{
+                  color: '#10B981',
                   fontSize: '10px',
-                  opacity: isNewUnlock('interests') ? 1 : 1,
-                  animationDelay: `${i * 100}ms`
+                  animationDelay: `${index * 100}ms`
                 }}
               >
                 {interest}
@@ -170,10 +173,9 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
         <RedactedBlock label="INTERESTS [50%]" icon={Tag} />
       )}
 
-      {/* PHOTO */}
       {unlocked.photo ? (
-        <UnlockedField 
-          label="VISUAL" 
+        <UnlockedField
+          label="VISUAL"
           icon={ImageIcon}
           isNew={isNewUnlock('photo')}
         >

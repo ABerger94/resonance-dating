@@ -10,7 +10,7 @@ import DevToolbar from '@/components/resonance/DevToolbar';
 import useResonanceStore from '@/lib/resonanceStore';
 import { useAuth } from '@/lib/AuthContext';
 import { canAccessThread, canUseAdminTools, mergeUnlockedProfileFields, sanitizePublicProfile } from '@/lib/security';
-import { ArrowLeft, Send, Terminal, ChevronRight, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Circle, Send, Terminal, ChevronRight, ChevronDown } from 'lucide-react';
 
 export default function Sandbox() {
   const { threadId } = useParams();
@@ -374,12 +374,12 @@ export default function Sandbox() {
               </button>
             </div>
             <div className="text-muted-foreground/30 tracking-widest" style={{ fontSize: '9px' }}>
-              ENTER TO SEND · SHIFT+ENTER FOR NEWLINE
+              ENTER TO SEND / SHIFT+ENTER FOR NEWLINE
             </div>
           </div>
         </div>
 
-        {/* Right sidebar — hidden on mobile */}
+        {/* Right sidebar hidden on mobile */}
         <div 
           className="hidden md:flex w-72 flex-none border-l flex-col overflow-y-auto"
           style={{ borderColor: 'hsl(var(--border))' }}
@@ -387,7 +387,8 @@ export default function Sandbox() {
           {/* Resonance Meter */}
           <div className="border-b p-4" style={{ borderColor: 'hsl(var(--border))' }}>
             <div className="text-muted-foreground/50 text-xs tracking-widest mb-3" style={{ fontSize: '9px' }}>
-              ◈ RESONANCE METER
+              <Circle size={8} className="inline mr-1 fill-current" />
+              RESONANCE METER
             </div>
             <ResonanceMeter score={effectiveScore} />
           </div>
@@ -395,7 +396,8 @@ export default function Sandbox() {
           {/* Dynamic Profile */}
           <div className="p-4">
             <div className="text-muted-foreground/50 text-xs tracking-widest mb-3" style={{ fontSize: '9px' }}>
-              ◈ SIGNAL PROFILE
+              <Circle size={8} className="inline mr-1 fill-current" />
+              SIGNAL PROFILE
             </div>
             <DynamicProfile
               profile={otherProfile}

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import ThreadCard from '@/components/resonance/ThreadCard';
 import useResonanceStore from '@/lib/resonanceStore';
-import { MessageSquare, Plus } from 'lucide-react';
+import { ArrowRight, Circle, MessageSquare, Plus } from 'lucide-react';
 
 export default function Threads() {
   const navigate = useNavigate();
@@ -23,25 +23,24 @@ export default function Threads() {
       const created = await base44.entities.Thread.filter({ creator_id: currentUser.id }, '-updated_date', 50);
       const joined = await base44.entities.Thread.filter({ joiner_id: currentUser.id }, '-updated_date', 50);
       const all = [...created, ...joined];
-      // Deduplicate
       const seen = new Set();
-      const unique = all.filter(t => {
-        if (seen.has(t.id)) return false;
-        seen.add(t.id);
+      const unique = all.filter(thread => {
+        if (seen.has(thread.id)) return false;
+        seen.add(thread.id);
         return true;
       });
       setThreads(unique.sort((a, b) => new Date(b.updated_date) - new Date(a.updated_date)));
-    } catch (e) {
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
   const stateGroups = {
-    resonating: threads.filter(t => t.resonance_state === 'resonating'),
-    discovering: threads.filter(t => t.resonance_state === 'discovering'),
-    locked: threads.filter(t => t.resonance_state === 'locked' || !t.resonance_state)
+    resonating: threads.filter(thread => thread.resonance_state === 'resonating'),
+    discovering: threads.filter(thread => thread.resonance_state === 'discovering'),
+    locked: threads.filter(thread => thread.resonance_state === 'locked' || !thread.resonance_state)
   };
 
   const stateColors = {
@@ -86,7 +85,8 @@ export default function Threads() {
               className="mt-4 px-4 py-2 border text-xs tracking-widest hover:border-primary/50 hover:text-primary transition-all"
               style={{ borderColor: 'hsl(var(--border))' }}
             >
-              → ENTER THE VOID
+              <ArrowRight size={12} className="inline mr-1" />
+              ENTER THE VOID
             </button>
           </div>
         ) : (
@@ -94,7 +94,7 @@ export default function Threads() {
             group.length > 0 && (
               <div key={state} className="space-y-2">
                 <div className="flex items-center gap-2" style={{ fontSize: '9px' }}>
-                  <span style={{ color: stateColors[state] }}>●</span>
+                  <Circle size={8} className="fill-current" style={{ color: stateColors[state] }} />
                   <span className="tracking-widest text-muted-foreground/60">{state.toUpperCase()} ({group.length})</span>
                 </div>
                 {group.map(thread => (

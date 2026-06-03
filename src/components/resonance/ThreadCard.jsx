@@ -1,5 +1,4 @@
 import { formatDistanceToNow } from 'date-fns';
-import { renderSegmentedBar } from '@/lib/resonanceEngine';
 import { Radio, Lock, Zap, MessageSquare } from 'lucide-react';
 
 const STATE_ICONS = {
@@ -12,8 +11,7 @@ export default function ThreadCard({ thread, onClick, isActive = false }) {
   const state = thread.resonance_state || 'locked';
   const score = thread.resonance_score || 0;
   const StateIcon = STATE_ICONS[state];
-  const bar = renderSegmentedBar(score, 10);
-  const filled = bar.split('').filter(c => c === '█').length;
+  const filled = Math.round((score / 100) * 10);
   const empty = 10 - filled;
 
   const stateColors = {
@@ -35,20 +33,16 @@ export default function ThreadCard({ thread, onClick, isActive = false }) {
       }}
     >
       <div className="font-mono space-y-2">
-        {/* Header row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <StateIcon size={10} style={{ color: stateColors[state] }} />
             <span className="text-xs font-bold tracking-widest">
-              {thread.joiner_id ? 
-                (thread.creator_handle || 'UNKNOWN') : 
-                (thread.creator_handle || 'UNKNOWN')
-              }
+              {thread.creator_handle || 'UNKNOWN'}
             </span>
           </div>
           <div className="flex items-center gap-1.5">
             <MessageSquare size={9} className="text-muted-foreground/40" />
-            <span 
+            <span
               className="text-xs tracking-widest font-bold"
               style={{ color: stateColors[state], fontSize: '10px' }}
             >
@@ -57,11 +51,16 @@ export default function ThreadCard({ thread, onClick, isActive = false }) {
           </div>
         </div>
 
-        {/* Score bar */}
-        <div className="flex items-center gap-1" style={{ fontSize: '11px', letterSpacing: '1px' }}>
-          <span style={{ color: stateColors[state] }}>{'█'.repeat(filled)}</span>
-          <span className="text-muted-foreground/20">{'░'.repeat(empty)}</span>
-          <span 
+        <div className="flex items-center gap-1">
+          <div className="flex gap-px" aria-label={`${score} percent resonance`}>
+            {Array.from({ length: filled }).map((_, index) => (
+              <span key={`filled-${index}`} className="h-2 w-2" style={{ background: stateColors[state] }} />
+            ))}
+            {Array.from({ length: empty }).map((_, index) => (
+              <span key={`empty-${index}`} className="h-2 w-2 bg-muted-foreground/20" />
+            ))}
+          </div>
+          <span
             className="ml-1 tracking-widest text-muted-foreground/60"
             style={{ fontSize: '9px' }}
           >
@@ -69,7 +68,6 @@ export default function ThreadCard({ thread, onClick, isActive = false }) {
           </span>
         </div>
 
-        {/* Last activity */}
         {lastActivity && (
           <div className="text-muted-foreground/40" style={{ fontSize: '9px' }}>
             {formatDistanceToNow(new Date(lastActivity), { addSuffix: true }).toUpperCase()}

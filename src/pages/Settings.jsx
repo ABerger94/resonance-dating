@@ -4,7 +4,16 @@ import { MOCK_PROFILES, MOCK_THREADS } from '@/lib/mockSeeder';
 import useResonanceStore from '@/lib/resonanceStore';
 import { useAuth } from '@/lib/AuthContext';
 import { canUseAdminTools } from '@/lib/security';
-import { Settings as SettingsIcon, Trash2, Play, Square } from 'lucide-react';
+import {
+  Check,
+  Circle,
+  CornerDownRight,
+  DatabaseZap,
+  Play,
+  Settings as SettingsIcon,
+  Square,
+  Trash2
+} from 'lucide-react';
 
 export default function Settings() {
   const { user: authUser } = useAuth();
@@ -31,66 +40,98 @@ export default function Settings() {
     appendLog(`Mock seeder ${newVal ? 'ENABLED' : 'DISABLED'}`, newVal ? 'success' : 'warn');
   };
 
+  const upsertMockProfile = async (profile) => {
+    const publicData = {
+      user_id: profile.mock_id,
+      handle: profile.handle,
+      tag_cloud: profile.tag_cloud,
+      location: profile.location,
+      age: profile.age,
+      sex: profile.sex,
+      preference_min_age: profile.preference_min_age,
+      preference_max_age: profile.preference_max_age,
+      preference_gender: profile.preference_gender,
+      latitude: profile.latitude,
+      longitude: profile.longitude,
+      match_radius_miles: profile.match_radius_miles,
+      is_mock: true,
+      mock_id: profile.mock_id
+    };
+    const existingProfiles = await base44.entities.UserProfile.filter({ mock_id: profile.mock_id });
+    if (existingProfiles[0]) {
+      await base44.entities.UserProfile.update(existingProfiles[0].id, publicData);
+    } else {
+      await base44.entities.UserProfile.create(publicData);
+    }
+
+    const privateData = {
+      user_id: profile.mock_id,
+      display_name: profile.display_name,
+      bio: profile.bio,
+      interests: profile.interests,
+      photo_url: profile.photo_url,
+      photo_urls: profile.photo_url ? [profile.photo_url] : []
+    };
+    const existingPrivateProfiles = await base44.entities.PrivateProfile.filter({ user_id: profile.mock_id });
+    if (existingPrivateProfiles[0]) {
+      await base44.entities.PrivateProfile.update(existingPrivateProfiles[0].id, privateData);
+    } else {
+      await base44.entities.PrivateProfile.create(privateData);
+    }
+  };
+
+  const seedMockData = async ({ replaceThreads = false } = {}) => {
+    for (const profile of MOCK_PROFILES) {
+      try {
+        await upsertMockProfile(profile);
+        appendLog(`Seeded profile: ${profile.handle}`, 'success');
+      } catch (error) {
+        appendLog(`Profile ${profile.handle}: ${error.message}`, 'error');
+      }
+    }
+
+    if (replaceThreads) {
+      const existingThreads = await base44.entities.Thread.filter({ is_mock: true }, '-created_date', 500);
+      for (const thread of existingThreads) {
+        await base44.entities.Thread.delete(thread.id);
+      }
+      appendLog(`Replaced ${existingThreads.length} mock threads`, 'warn');
+    }
+
+    for (const thread of MOCK_THREADS) {
+      try {
+        const threadData = {
+          creator_id: thread.creator_id,
+          creator_handle: thread.creator_handle,
+          prompt_id: thread.prompt_id,
+          prompt_text: thread.prompt_text,
+          topic_tags: thread.topic_tags,
+          status: 'void',
+          resonance_state: 'locked',
+          resonance_score: 0,
+          is_mock: true
+        };
+        const existingThreads = await base44.entities.Thread.filter({ id: thread.id });
+        if (existingThreads[0]) {
+          await base44.entities.Thread.update(existingThreads[0].id, threadData);
+        } else {
+          await base44.entities.Thread.create({ ...threadData, id: thread.id });
+        }
+        appendLog(`Seeded thread by ${thread.creator_handle}`, 'success');
+      } catch (error) {
+        appendLog(`Thread: ${error.message}`, 'error');
+      }
+    }
+  };
+
   const handleSeedData = async () => {
     setSeeding(true);
     appendLog('Starting mock data seed...');
     try {
-      // Seed UserProfiles
-      for (const p of MOCK_PROFILES) {
-        try {
-          await base44.entities.UserProfile.create({
-            user_id: p.mock_id,
-            handle: p.handle,
-            tag_cloud: p.tag_cloud,
-            location: p.location,
-            age: p.age,
-            sex: p.sex,
-            preference_min_age: p.preference_min_age,
-            preference_max_age: p.preference_max_age,
-            preference_gender: p.preference_gender,
-            latitude: p.latitude,
-            longitude: p.longitude,
-            match_radius_miles: p.match_radius_miles,
-            is_mock: true,
-            mock_id: p.mock_id
-          });
-          await base44.entities.PrivateProfile.create({
-            user_id: p.mock_id,
-            display_name: p.display_name,
-            bio: p.bio,
-            interests: p.interests,
-            photo_url: p.photo_url,
-            photo_urls: p.photo_url ? [p.photo_url] : []
-          });
-          appendLog(`Seeded profile: ${p.handle}`, 'success');
-        } catch (e) {
-          appendLog(`Profile ${p.handle}: ${e.message}`, 'error');
-        }
-      }
-
-      // Seed Void threads
-      for (const t of MOCK_THREADS) {
-        try {
-          await base44.entities.Thread.create({
-            creator_id: t.creator_id,
-            creator_handle: t.creator_handle,
-            prompt_id: t.prompt_id,
-            prompt_text: t.prompt_text,
-            topic_tags: t.topic_tags,
-            status: 'void',
-            resonance_state: 'locked',
-            resonance_score: 0,
-            is_mock: true
-          });
-          appendLog(`Seeded thread by ${t.creator_handle}`, 'success');
-        } catch (e) {
-          appendLog(`Thread: ${e.message}`, 'error');
-        }
-      }
-
-      appendLog('✓ Seed complete', 'success');
-    } catch (e) {
-      appendLog(`Seed failed: ${e.message}`, 'error');
+      await seedMockData();
+      appendLog('Seed complete', 'success');
+    } catch (error) {
+      appendLog(`Seed failed: ${error.message}`, 'error');
     } finally {
       setSeeding(false);
     }
@@ -101,26 +142,65 @@ export default function Settings() {
     appendLog('Purging mock data...');
     try {
       const mockProfiles = await base44.entities.UserProfile.filter({ is_mock: true });
-      for (const p of mockProfiles) {
-        if (p.mock_id) {
-          const privateProfiles = await base44.entities.PrivateProfile.filter({ user_id: p.mock_id });
+      for (const profile of mockProfiles) {
+        if (profile.mock_id) {
+          const privateProfiles = await base44.entities.PrivateProfile.filter({ user_id: profile.mock_id });
           for (const privateProfile of privateProfiles) {
             await base44.entities.PrivateProfile.delete(privateProfile.id);
           }
         }
-        await base44.entities.UserProfile.delete(p.id);
+        await base44.entities.UserProfile.delete(profile.id);
       }
       appendLog(`Deleted ${mockProfiles.length} mock profiles`, 'warn');
 
       const mockThreads = await base44.entities.Thread.filter({ is_mock: true });
-      for (const t of mockThreads) {
-        await base44.entities.Thread.delete(t.id);
+      for (const thread of mockThreads) {
+        await base44.entities.Thread.delete(thread.id);
       }
       appendLog(`Deleted ${mockThreads.length} mock threads`, 'warn');
+      appendLog('Purge complete', 'success');
+    } catch (error) {
+      appendLog(`Purge failed: ${error.message}`, 'error');
+    } finally {
+      setPurging(false);
+    }
+  };
 
-      appendLog('✓ Purge complete', 'success');
-    } catch (e) {
-      appendLog(`Purge failed: ${e.message}`, 'error');
+  const handleFreshStart = async () => {
+    setPurging(true);
+    appendLog('Starting fresh data reset...');
+    try {
+      const interactions = await base44.entities.Interaction.filter({}, '-created_date', 1000);
+      for (const interaction of interactions) {
+        await base44.entities.Interaction.delete(interaction.id);
+      }
+      appendLog(`Deleted ${interactions.length} interactions`, 'warn');
+
+      const threads = await base44.entities.Thread.filter({}, '-created_date', 1000);
+      for (const thread of threads) {
+        await base44.entities.Thread.delete(thread.id);
+      }
+      appendLog(`Deleted ${threads.length} threads`, 'warn');
+
+      const profiles = await base44.entities.UserProfile.filter({}, '-created_date', 1000);
+      const realProfiles = profiles.filter(profile => !profile.is_mock);
+      for (const profile of realProfiles) {
+        await base44.entities.UserProfile.delete(profile.id);
+      }
+      appendLog(`Deleted ${realProfiles.length} real public profiles`, 'warn');
+
+      const privateProfiles = await base44.entities.PrivateProfile.filter({}, '-created_date', 1000);
+      const realPrivateProfiles = privateProfiles.filter(profile => !profile.user_id?.startsWith('mock_'));
+      for (const profile of realPrivateProfiles) {
+        await base44.entities.PrivateProfile.delete(profile.id);
+      }
+      appendLog(`Deleted ${realPrivateProfiles.length} real private profiles`, 'warn');
+
+      await seedMockData({ replaceThreads: true });
+      setSeederEnabled(true);
+      appendLog('Fresh start complete. Remove provider auth accounts in Base44 auth/admin.', 'success');
+    } catch (error) {
+      appendLog(`Fresh start failed: ${error.message}`, 'error');
     } finally {
       setPurging(false);
     }
@@ -138,10 +218,9 @@ export default function Settings() {
       </div>
 
       <div className="max-w-2xl mx-auto px-6 py-6 space-y-6">
-        {/* Seeder toggle */}
         <div className="border p-4 space-y-4" style={{ borderColor: 'hsl(var(--border))' }}>
           <div className="flex items-center gap-2 text-xs tracking-widest">
-            <span className="text-muted-foreground/60">◈</span>
+            <Circle size={8} className="text-muted-foreground/60" />
             <span className="text-foreground/80">MOCK USER SEEDER</span>
           </div>
 
@@ -151,7 +230,7 @@ export default function Settings() {
                 STATUS: {seederEnabled ? 'ENABLED' : 'DISABLED'}
               </div>
               <div className="text-muted-foreground/40" style={{ fontSize: '10px' }}>
-                When enabled, mock threads from 8-10 fictional users appear in the Void.
+                When enabled, mock threads from fictional users appear in the Void.
               </div>
             </div>
             <button
@@ -168,14 +247,13 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* DB seed/purge */}
         <div className="border p-4 space-y-4" style={{ borderColor: 'hsl(var(--border))' }}>
           <div className="flex items-center gap-2 text-xs tracking-widest">
-            <span className="text-muted-foreground/60">◈</span>
+            <Circle size={8} className="text-muted-foreground/60" />
             <span className="text-foreground/80">DATABASE OPERATIONS</span>
           </div>
           <div className="text-muted-foreground/40" style={{ fontSize: '10px' }}>
-            Persist mock data to the database so all sessions see them, or purge all mock records.
+            Persist mock data, purge mock records, or reset real app data while preserving seeded mocks.
           </div>
           <div className="flex gap-3">
             <button
@@ -184,7 +262,7 @@ export default function Settings() {
               className="flex-1 py-2 border text-xs tracking-widest transition-all hover:border-primary/50 hover:text-primary disabled:opacity-30"
               style={{ borderColor: 'hsl(var(--border))' }}
             >
-              {seeding ? 'SEEDING...' : '↳ SEED TO DB'}
+              {seeding ? 'SEEDING...' : <><CornerDownRight size={10} className="inline mr-1" />SEED TO DB</>}
             </button>
             <button
               onClick={handlePurgeMocks}
@@ -196,12 +274,20 @@ export default function Settings() {
               {purging ? 'PURGING...' : 'PURGE MOCKS'}
             </button>
           </div>
+          <button
+            onClick={handleFreshStart}
+            disabled={seeding || purging}
+            className="flex w-full items-center justify-center gap-1.5 py-2 border text-xs tracking-widest transition-all hover:border-destructive/50 hover:text-destructive disabled:opacity-30"
+            style={{ borderColor: 'hsl(var(--border))' }}
+          >
+            <DatabaseZap size={11} />
+            {purging ? 'RESETTING...' : 'FRESH START: DELETE REAL DATA AND RESEED MOCKS'}
+          </button>
         </div>
 
-        {/* Dev mode toggle */}
         <div className="border p-4 space-y-4" style={{ borderColor: devMode ? 'rgba(245,158,11,0.2)' : 'hsl(var(--border))' }}>
           <div className="flex items-center gap-2 text-xs tracking-widest">
-            <span className="text-muted-foreground/60">◈</span>
+            <Circle size={8} className="text-muted-foreground/60" />
             <span className="text-foreground/80">DEV TOOLBAR</span>
           </div>
           <div className="flex items-center justify-between">
@@ -227,18 +313,18 @@ export default function Settings() {
           </div>
         </div>
 
-        {/* Operation log */}
         {log.length > 0 && (
-          <div 
+          <div
             className="border p-3 space-y-1 max-h-40 overflow-y-auto"
             style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--card))' }}
           >
             <div className="text-muted-foreground/40 mb-2 tracking-widest" style={{ fontSize: '9px' }}>
               OPERATION LOG
             </div>
-            {log.map((entry, i) => (
-              <div key={i} style={{ color: logColors[entry.type], fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" }}>
+            {log.map((entry, index) => (
+              <div key={index} style={{ color: logColors[entry.type], fontSize: '10px', fontFamily: "'JetBrains Mono', monospace" }}>
                 <span className="text-muted-foreground/30 mr-2">{new Date(entry.ts).toLocaleTimeString()}</span>
+                {entry.type === 'success' && <Check size={10} className="inline mr-1" />}
                 {entry.msg}
               </div>
             ))}

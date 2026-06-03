@@ -1,4 +1,4 @@
-// ResonanceEngine — pure scoring utility, stateless
+// ResonanceEngine: pure scoring utility, stateless
 // State machine: locked (0-24%) -> discovering (25-59%) -> resonating (60-100%)
 
 const SENTIMENT_POSITIVE = [
@@ -114,7 +114,7 @@ export function getNextUnlock(score) {
 export function renderSegmentedBar(score, total = 20) {
   const filled = Math.round((score / 100) * total);
   const empty = total - filled;
-  return '█'.repeat(filled) + '░'.repeat(empty);
+  return '#'.repeat(filled) + '-'.repeat(empty);
 }
 
 export function getStateColor(state) {

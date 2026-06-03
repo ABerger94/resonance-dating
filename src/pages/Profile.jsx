@@ -4,7 +4,7 @@ import useResonanceStore from '@/lib/resonanceStore';
 import { clampMatchRadiusMiles, resolveCoordinates, DEFAULT_MATCH_RADIUS_MILES } from '@/lib/location';
 import { clampAge, normalizeGenderPreference, normalizePreferenceAges, normalizeSex } from '@/lib/profilePreferences';
 import { useAuth } from '@/lib/AuthContext';
-import { User, RefreshCw, Upload, X, LogOut } from 'lucide-react';
+import { Check, CornerDownRight, LockKeyhole, LogOut, RefreshCw, TriangleAlert, Upload, User, X } from 'lucide-react';
 
 const MAX_PROFILE_PHOTOS = 6;
 const MAX_PROFILE_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -240,7 +240,7 @@ export default function Profile() {
           style={{ borderColor: 'hsl(var(--border))', background: 'rgba(245,158,11,0.03)' }}
         >
           <div className="flex items-center gap-2 text-accent/70 tracking-widest" style={{ fontSize: '9px' }}>
-            <span>⚠</span>
+            <TriangleAlert size={10} />
             <span>PROGRESSIVE UNLOCK SYSTEM ACTIVE</span>
           </div>
           <div className="text-muted-foreground/50" style={{ fontSize: '10px' }}>
@@ -256,7 +256,8 @@ export default function Profile() {
                   className="tracking-widest" 
                   style={{ fontSize: '9px', color: field.locked ? '#F59E0B' : 'hsl(215 20% 52%)' }}
                 >
-                  {field.locked ? '🔒 ' : ''}{field.label}
+                  {field.locked && <LockKeyhole size={9} className="inline mr-1" />}
+                  {field.label}
                 </span>
                 {field.action}
               </div>
@@ -371,7 +372,7 @@ export default function Profile() {
             color: '#10B981'
           }}
         >
-          {saving ? 'SAVING...' : saved ? '✓ PROFILE SAVED' : '↳ SAVE PROFILE'}
+          {saving ? 'SAVING...' : saved ? <><Check size={12} className="inline mr-1" />PROFILE SAVED</> : <><CornerDownRight size={12} className="inline mr-1" />SAVE PROFILE</>}
         </button>
       </div>
     </div>

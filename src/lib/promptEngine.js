@@ -1,4 +1,4 @@
-// PromptEngine — curated library of high-concept challenges
+// PromptEngine: curated library of high-concept challenges
 
 export const PROMPTS = [
   {
@@ -58,7 +58,7 @@ export const PROMPTS = [
   {
     id: 'p010',
     category: 'ETHICS',
-    text: 'You can delete one law. Not propose a replacement — just delete it. Which and why?',
+    text: 'You can delete one law. Not propose a replacement, just delete it. Which and why?',
     tags: ['ethics', 'law', 'politics']
   },
   {
@@ -76,7 +76,7 @@ export const PROMPTS = [
   {
     id: 'p013',
     category: 'ART',
-    text: 'Describe a piece of music that changed your internal chemistry. Not your favorite — the one that shifted something.',
+    text: 'Describe a piece of music that changed your internal chemistry. Not your favorite, the one that shifted something.',
     tags: ['music', 'emotion', 'art']
   },
   {

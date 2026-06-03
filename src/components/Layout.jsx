@@ -37,12 +37,12 @@ export default function Layout() {
         </header>
       )}
 
-      {/* Page content — padded at bottom so content clears the nav */}
+      {/* Page content is padded at bottom so content clears the nav */}
       <main className={`flex-1 ${!isSandbox ? 'pb-20' : ''}`}>
         <Outlet />
       </main>
 
-      {/* Bottom nav — dating-app style */}
+      {/* Bottom nav, dating-app style */}
       {!isSandbox && (
         <nav
           className="fixed bottom-0 left-0 right-0 border-t flex items-center justify-around z-50"

@@ -15,16 +15,16 @@ Deno.serve(async (req) => {
     try {
       await base44.asServiceRole.integrations.Core.SendEmail({
         to: email,
-        subject: 'Resonance — your verification code is on its way',
+        subject: 'Resonance - your verification code is on its way',
         body: `<p style="font-family:monospace">Hi,</p>
 <p style="font-family:monospace">You requested a new verification code for Resonance.</p>
 <p style="font-family:monospace">A 6-digit code was just sent to <strong>${email}</strong> in a separate email with the subject <em>"Verify your email"</em>.</p>
 <p style="font-family:monospace">If you don't see it within a minute, please check your <strong>spam or junk folder</strong>.</p>
-<p style="font-family:monospace">— Resonance</p>`,
+<p style="font-family:monospace">- Resonance</p>`,
         from_name: 'Resonance'
       });
     } catch (emailErr) {
-      // Non-fatal — log but don't fail the request
+      // Non-fatal: log but don't fail the request
       console.error('Helper email failed:', emailErr.message);
     }
 

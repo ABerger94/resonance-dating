@@ -9,7 +9,7 @@ import VoidBubble from '@/components/resonance/VoidBubble';
 import useResonanceStore from '@/lib/resonanceStore';
 import { useAuth } from '@/lib/AuthContext';
 import { canUseAdminTools, isJoinableThread } from '@/lib/security';
-import { Radio, Plus, X } from 'lucide-react';
+import { Circle, Plus, Radio, RefreshCw, X } from 'lucide-react';
 
 export default function Void() {
   const navigate = useNavigate();
@@ -158,7 +158,7 @@ export default function Void() {
         </div>
       </div>
 
-      {/* Cast form — overlay panel */}
+      {/* Cast form overlay panel */}
       {showCastForm && (
         <div className="border-b px-6 py-5 space-y-4"
           style={{
@@ -175,7 +175,7 @@ export default function Void() {
             }}
           >
             <div className="flex items-center gap-2 text-primary text-xs tracking-widest">
-              <span>◈</span>
+              <Circle size={8} className="fill-current" />
               <span>CAST NEW THREAD INTO THE VOID</span>
             </div>
 
@@ -242,7 +242,8 @@ export default function Void() {
                   className="px-3 py-1.5 border text-xs tracking-widest transition-all hover:border-primary/50 hover:text-primary w-fit"
                   style={{ borderColor: 'hsl(var(--border))' }}
                 >
-                  ↻ SHUFFLE PROMPT
+                  <RefreshCw size={11} className="inline mr-1" />
+                  SHUFFLE PROMPT
                 </button>
               </>
             )}
@@ -267,7 +268,7 @@ export default function Void() {
                 color: '#10B981'
               }}
             >
-              {casting ? 'CASTING...' : '◈ CAST INTO THE VOID ◈'}
+              {casting ? 'CASTING...' : 'CAST INTO THE VOID'}
             </button>
           </div>
           </div>

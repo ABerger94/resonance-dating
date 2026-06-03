@@ -134,9 +134,16 @@
 }
 
 .cursor-blink::after {
-  content: '█';
+  content: '|';
   animation: blink 1s infinite;
   color: hsl(var(--primary));
+}
+
+.auth-inverted {
+  --primary: 215 20% 52%;
+  --primary-foreground: 0 0% 100%;
+  --muted-foreground: 199 89% 48%;
+  --ring: 215 20% 52%;
 }
 
 .terminal-border {

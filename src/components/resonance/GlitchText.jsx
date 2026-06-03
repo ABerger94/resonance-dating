@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 
-const GLITCH_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*░▒▓█▄▀■□';
+const GLITCH_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
 
-export default function GlitchText({ 
-  text, 
-  trigger = false, 
-  duration = 800, 
+export default function GlitchText({
+  text,
+  trigger = false,
+  duration = 800,
   className = '',
-  onComplete 
+  onComplete
 }) {
   const [displayText, setDisplayText] = useState('');
   const [isAnimating, setIsAnimating] = useState(false);
@@ -26,11 +26,11 @@ export default function GlitchText({
     if (isAnimating) return;
     setIsAnimating(true);
     startTimeRef.current = Date.now();
-    
+
     intervalRef.current = setInterval(() => {
       const elapsed = Date.now() - startTimeRef.current;
       const progress = elapsed / duration;
-      
+
       if (progress >= 1) {
         clearInterval(intervalRef.current);
         setDisplayText(text);
@@ -39,18 +39,17 @@ export default function GlitchText({
         return;
       }
 
-      // Progressively reveal real characters from left
       const revealedCount = Math.floor(progress * text.length);
       let scrambled = text.slice(0, revealedCount);
-      
-      for (let i = revealedCount; i < text.length; i++) {
-        if (text[i] === ' ') {
+
+      for (let index = revealedCount; index < text.length; index += 1) {
+        if (text[index] === ' ') {
           scrambled += ' ';
         } else {
           scrambled += GLITCH_CHARS[Math.floor(Math.random() * GLITCH_CHARS.length)];
         }
       }
-      
+
       setDisplayText(scrambled);
     }, 40);
   };
@@ -60,11 +59,11 @@ export default function GlitchText({
   }, []);
 
   return (
-    <span 
+    <span
       className={`font-mono ${isAnimating ? 'text-primary' : ''} transition-colors ${className}`}
       style={{ fontFamily: "'JetBrains Mono', monospace" }}
     >
-      {displayText || (text ? '████████████████'.slice(0, text.length) : '')}
+      {displayText || (text ? ''.padStart(text.length, '*') : '')}
     </span>
   );
 }

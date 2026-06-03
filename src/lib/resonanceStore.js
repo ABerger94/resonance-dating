@@ -1,4 +1,4 @@
-// ResonanceContext — Zustand store with localStorage persistence
+// ResonanceContext: Zustand store with localStorage persistence
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { isDevToolsEnabled } from '@/lib/security';

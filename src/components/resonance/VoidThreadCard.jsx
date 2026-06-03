@@ -66,7 +66,7 @@ export default function VoidThreadCard({ thread, onJoin, style = {} }) {
           </div>
         )}
 
-        {/* Join CTA — always visible on mobile, hover-only on desktop */}
+        {/* Join CTA is always visible on mobile, hover-only on desktop */}
         <div 
           className={`flex items-center justify-end gap-1 text-xs transition-opacity duration-200 opacity-100 sm:opacity-0 ${hovered ? 'sm:opacity-100' : ''}`}
           style={{ color: '#0EA5E9' }}

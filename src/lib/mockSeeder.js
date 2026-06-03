@@ -1,4 +1,4 @@
-// Mock User Seeder — generates 8-10 mock profiles + interactions at varying ResonanceScore levels
+// Mock User Seeder: generates mock profiles and interactions at varying ResonanceScore levels
 
 export const MOCK_PROFILES = [
   {
@@ -119,7 +119,7 @@ export const MOCK_PROFILES = [
     preference_min_age: 30,
     preference_max_age: 50,
     preference_gender: 'all',
-    bio: 'Documentary filmmaker obsessed with systems of control — food, finance, fashion. Currently in post-production on a film about the global vanilla trade and why it\'s deeply weird.',
+    bio: 'Documentary filmmaker obsessed with systems of control: food, finance, fashion. Currently in post-production on a film about the global vanilla trade and why it\'s deeply weird.',
     interests: ['documentary', 'systems theory', 'food politics', 'visual journalism', 'supply chains'],
     photo_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&q=80',
     tag_cloud: ['film', 'politics', 'economics', 'culture'],
@@ -240,6 +240,42 @@ export const MOCK_THREADS = [
   },
   {
     id: 'mthread_03',
+    creator_id: 'mock_03',
+    creator_handle: 'ECHO_DEPTH',
+    prompt_id: 'p012',
+    prompt_text: 'What memory would you trade away if it meant understanding someone else completely for one day?',
+    topic_tags: ['memory', 'empathy', 'identity'],
+    status: 'void',
+    resonance_state: 'locked',
+    resonance_score: 0,
+    is_mock: true
+  },
+  {
+    id: 'mthread_04',
+    creator_id: 'mock_04',
+    creator_handle: 'STATIC_MIND',
+    prompt_id: 'p018',
+    prompt_text: 'What pattern in your life keeps repeating even after you think you have learned from it?',
+    topic_tags: ['patterns', 'growth', 'self-knowledge'],
+    status: 'void',
+    resonance_state: 'locked',
+    resonance_score: 0,
+    is_mock: true
+  },
+  {
+    id: 'mthread_05',
+    creator_id: 'mock_05',
+    creator_handle: 'DEEP_FREQ',
+    prompt_id: 'p020',
+    prompt_text: 'What part of the natural world makes you feel both insignificant and responsible?',
+    topic_tags: ['nature', 'responsibility', 'scale'],
+    status: 'void',
+    resonance_state: 'locked',
+    resonance_score: 0,
+    is_mock: true
+  },
+  {
+    id: 'mthread_06',
     creator_id: 'mock_06',
     creator_handle: 'NULL_POINT',
     prompt_id: 'p022',
@@ -251,12 +287,48 @@ export const MOCK_THREADS = [
     is_mock: true
   },
   {
-    id: 'mthread_04',
+    id: 'mthread_07',
+    creator_id: 'mock_07',
+    creator_handle: 'PHASE_LOCK',
+    prompt_id: 'p025',
+    prompt_text: 'What belief do you keep because losing it would change too much of your life?',
+    topic_tags: ['belief', 'change', 'philosophy'],
+    status: 'void',
+    resonance_state: 'locked',
+    resonance_score: 0,
+    is_mock: true
+  },
+  {
+    id: 'mthread_08',
     creator_id: 'mock_08',
     creator_handle: 'CARRIER_WV',
     prompt_id: 'p030',
     prompt_text: 'What do you want to have made, said, or done that would justify having been here?',
     topic_tags: ['legacy', 'purpose', 'meaning'],
+    status: 'void',
+    resonance_state: 'locked',
+    resonance_score: 0,
+    is_mock: true
+  },
+  {
+    id: 'mthread_09',
+    creator_id: 'mock_09',
+    creator_handle: 'QUANTA_RY',
+    prompt_id: 'p034',
+    prompt_text: 'What game, system, or ritual taught you more about people than school ever did?',
+    topic_tags: ['strategy', 'learning', 'people'],
+    status: 'void',
+    resonance_state: 'locked',
+    resonance_score: 0,
+    is_mock: true
+  },
+  {
+    id: 'mthread_10',
+    creator_id: 'mock_10',
+    creator_handle: 'FRINGE_OP',
+    prompt_id: 'p038',
+    prompt_text: 'What obsolete thing do you think people were wrong to abandon?',
+    topic_tags: ['history', 'craft', 'values'],
     status: 'void',
     resonance_state: 'locked',
     resonance_score: 0,
