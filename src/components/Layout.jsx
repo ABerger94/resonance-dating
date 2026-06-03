@@ -10,63 +10,83 @@ const NAV_ITEMS = [
 
 export default function Layout() {
   const location = useLocation();
-
-  // Don't show nav in sandbox (full-screen experience)
   const isSandbox = location.pathname.startsWith('/sandbox');
 
   return (
     <div className="min-h-screen flex flex-col font-mono" style={{ background: 'hsl(var(--background))' }}>
-      {/* Top nav */}
+      {/* Top brand bar */}
       {!isSandbox && (
-        <nav 
-          className="border-b px-4 sm:px-6 py-3 flex items-center justify-between flex-none"
+        <header
+          className="flex-none border-b px-4 py-3 flex items-center justify-between"
           style={{ borderColor: 'hsl(var(--border))' }}
         >
-          {/* Logo */}
           <div className="flex items-center gap-2">
             <Zap size={14} className="text-primary" />
             <span className="font-bold tracking-widest text-sm text-primary">RESONANCE</span>
-            <span className="hidden sm:block text-muted-foreground/30" style={{ fontSize: '9px' }}>
-              v0.1.0-mvp
-            </span>
+            <span className="text-muted-foreground/30" style={{ fontSize: '9px' }}>v0.1.0-mvp</span>
           </div>
-
-          {/* Nav links */}
-          <div className="flex items-center gap-1">
-            {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
-              const active = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
-              return (
-                <NavLink
-                  key={to}
-                  to={to}
-                  className="flex items-center gap-1.5 px-3 py-1.5 transition-all"
-                  style={{
-                    fontSize: '10px',
-                    letterSpacing: '2px',
-                    color: active ? 'hsl(258 90% 60%)' : 'hsl(230 15% 50%)',
-                    borderBottom: active ? '2px solid hsl(258 90% 60%)' : '2px solid transparent',
-                    fontFamily: "'JetBrains Mono', monospace"
-                  }}
-                >
-                  <Icon size={10} />
-                  <span className="hidden sm:inline">{label}</span>
-                </NavLink>
-              );
-            })}
-          </div>
-
-          {/* Status indicator */}
           <div className="flex items-center gap-1.5" style={{ fontSize: '9px', color: 'hsl(230 15% 60%)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            <span className="hidden sm:block tracking-widest">ONLINE</span>
+            <span className="tracking-widest">ONLINE</span>
           </div>
-        </nav>
+        </header>
       )}
 
-      {/* Page content */}
-      <main className="flex-1">
+      {/* Page content — padded at bottom so content clears the nav */}
+      <main className={`flex-1 ${!isSandbox ? 'pb-20' : ''}`}>
         <Outlet />
       </main>
+
+      {/* Bottom nav — dating-app style */}
+      {!isSandbox && (
+        <nav
+          className="fixed bottom-0 left-0 right-0 border-t flex items-center justify-around z-50"
+          style={{
+            borderColor: 'hsl(var(--border))',
+            background: 'hsl(var(--card))',
+            paddingBottom: 'env(safe-area-inset-bottom)',
+            minHeight: '64px'
+          }}
+        >
+          {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
+            const active = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
+            return (
+              <NavLink
+                key={to}
+                to={to}
+                className="flex flex-col items-center justify-center gap-1 flex-1 py-2 transition-all"
+                style={{ minHeight: '56px' }}
+              >
+                <div
+                  className="flex items-center justify-center w-10 h-10 rounded-2xl transition-all"
+                  style={{
+                    background: active ? 'hsl(258 90% 60% / 0.12)' : 'transparent',
+                  }}
+                >
+                  <Icon
+                    size={20}
+                    style={{
+                      color: active ? 'hsl(258 90% 60%)' : 'hsl(230 15% 55%)',
+                      strokeWidth: active ? 2.5 : 1.5
+                    }}
+                  />
+                </div>
+                <span
+                  style={{
+                    fontSize: '9px',
+                    letterSpacing: '1.5px',
+                    color: active ? 'hsl(258 90% 60%)' : 'hsl(230 15% 55%)',
+                    fontFamily: "'JetBrains Mono', monospace",
+                    fontWeight: active ? 700 : 400
+                  }}
+                >
+                  {label}
+                </span>
+              </NavLink>
+            );
+          })}
+        </nav>
+      )}
     </div>
   );
 }

@@ -101,16 +101,16 @@ export default function Void() {
           <div className="flex items-center gap-3">
             <Radio size={14} className="text-primary animate-pulse" />
             <span className="text-primary font-bold tracking-widest text-sm">THE VOID</span>
-            <span className="text-muted-foreground/50" style={{ fontSize: '10px' }}>
+            <span className="text-muted-foreground/50 hidden sm:block" style={{ fontSize: '10px' }}>
               // {threads.length} THREAD{threads.length !== 1 ? 'S' : ''} FLOATING
             </span>
           </div>
           <button
             onClick={() => setShowCastForm(!showCastForm)}
-            className="flex items-center gap-2 px-3 py-1.5 border text-xs tracking-widest transition-all hover:border-primary/50 hover:text-primary"
+            className="flex items-center gap-2 px-4 py-2 border text-xs tracking-widest transition-all hover:border-primary/50 hover:text-primary active:scale-95"
             style={{ borderColor: 'hsl(var(--border))' }}
           >
-            {showCastForm ? <X size={10} /> : <Plus size={10} />}
+            {showCastForm ? <X size={12} /> : <Plus size={12} />}
             {showCastForm ? 'CANCEL' : 'CAST THREAD'}
           </button>
         </div>
@@ -199,7 +199,7 @@ export default function Void() {
             <div className="text-muted-foreground/20 text-xs">Cast the first thread to initiate contact.</div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             {threads.map((thread, i) => (
               <VoidThreadCard
                 key={thread.id}

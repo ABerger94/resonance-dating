@@ -11,7 +11,7 @@ export default function VoidThreadCard({ thread, onJoin, style = {} }) {
 
   return (
     <div
-      className="void-card border p-4 cursor-pointer transition-all duration-300 font-mono group"
+      className="void-card border p-4 cursor-pointer transition-all duration-300 font-mono group active:scale-[0.98]"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onClick={() => onJoin(thread)}
@@ -66,9 +66,9 @@ export default function VoidThreadCard({ thread, onJoin, style = {} }) {
           </div>
         )}
 
-        {/* Join CTA */}
+        {/* Join CTA — always visible on mobile, hover-only on desktop */}
         <div 
-          className={`flex items-center justify-end gap-1 text-xs transition-opacity duration-200 ${hovered ? 'opacity-100' : 'opacity-0'}`}
+          className={`flex items-center justify-end gap-1 text-xs transition-opacity duration-200 opacity-100 sm:opacity-0 ${hovered ? 'sm:opacity-100' : ''}`}
           style={{ color: 'hsl(258 90% 60%)' }}
         >
           <span className="tracking-widest">ENTER THREAD</span>

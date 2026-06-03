@@ -8,7 +8,7 @@ import DynamicProfile from '@/components/resonance/DynamicProfile';
 import MessageBubble from '@/components/resonance/MessageBubble';
 import DevToolbar from '@/components/resonance/DevToolbar';
 import useResonanceStore from '@/lib/resonanceStore';
-import { ArrowLeft, Send, Terminal, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Send, Terminal, ChevronRight, ChevronDown } from 'lucide-react';
 
 export default function Sandbox() {
   const { threadId } = useParams();
@@ -28,6 +28,7 @@ export default function Sandbox() {
   const [loading, setLoading] = useState(true);
   const [promptCompleted, setPromptCompleted] = useState(false);
   const [displayScore, setDisplayScore] = useState(0);
+  const [showMobileProfile, setShowMobileProfile] = useState(false);
   const messagesEndRef = useRef(null);
   const lastMessageTimeRef = useRef(null);
 
@@ -203,10 +204,68 @@ export default function Sandbox() {
         </div>
       </div>
 
+      {/* Mobile-only resonance strip */}
+      <div
+        className="md:hidden flex-none border-b px-4 py-2 flex items-center justify-between cursor-pointer active:bg-muted/30 transition-colors"
+        style={{ borderColor: 'hsl(var(--border))' }}
+        onClick={() => setShowMobileProfile(!showMobileProfile)}
+      >
+        <div className="flex items-center gap-2">
+          <span style={{ fontSize: '9px', color: 'hsl(230 15% 55%)', letterSpacing: '2px' }}>RESONANCE</span>
+          <span
+            className="font-bold tabular-nums"
+            style={{
+              fontSize: '12px',
+              color: effectiveScore >= 60 ? 'hsl(258 90% 60%)' : effectiveScore >= 25 ? 'hsl(320 85% 60%)' : 'hsl(230 15% 55%)',
+              fontFamily: "'JetBrains Mono', monospace"
+            }}
+          >
+            {String(effectiveScore).padStart(3, '0')}%
+          </span>
+          {/* mini bar */}
+          <div className="flex gap-px">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div
+                key={i}
+                className="w-1.5 h-3 rounded-sm"
+                style={{
+                  background: i < Math.round(effectiveScore / 10)
+                    ? effectiveScore >= 60 ? 'hsl(258 90% 60%)' : effectiveScore >= 25 ? 'hsl(320 85% 60%)' : 'hsl(230 15% 55%)'
+                    : 'hsl(var(--border))'
+                }}
+              />
+            ))}
+          </div>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span style={{ fontSize: '9px', color: 'hsl(230 15% 55%)', letterSpacing: '1px' }}>SIGNAL PROFILE</span>
+          <ChevronDown
+            size={12}
+            className="text-muted-foreground transition-transform"
+            style={{ transform: showMobileProfile ? 'rotate(180deg)' : 'rotate(0deg)' }}
+          />
+        </div>
+      </div>
+
+      {/* Mobile profile panel */}
+      {showMobileProfile && (
+        <div
+          className="md:hidden flex-none border-b overflow-y-auto max-h-64 p-4"
+          style={{ borderColor: 'hsl(var(--border))', background: 'hsl(var(--card))' }}
+        >
+          <DynamicProfile
+            profile={otherProfile}
+            score={effectiveScore}
+            previousScore={previousScore}
+            threadId={threadId}
+          />
+        </div>
+      )}
+
       {/* Main layout */}
       <div className="flex-1 flex overflow-hidden">
         {/* Left: Messages */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 min-h-0">
           {/* Prompt banner */}
           {thread?.prompt_text && (
             <div 
@@ -300,9 +359,9 @@ export default function Sandbox() {
           </div>
         </div>
 
-        {/* Right sidebar */}
+        {/* Right sidebar — hidden on mobile */}
         <div 
-          className="w-72 flex-none border-l flex flex-col overflow-y-auto"
+          className="hidden md:flex w-72 flex-none border-l flex-col overflow-y-auto"
           style={{ borderColor: 'hsl(var(--border))' }}
         >
           {/* Resonance Meter */}
