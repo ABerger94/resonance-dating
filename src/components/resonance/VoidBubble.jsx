@@ -26,9 +26,9 @@ export default function VoidBubble({ thread, index, onJoin, containerWidth, cont
   const radius = Math.max(80, Math.min(130, 70 + textLen * 0.3));
 
   const colorBase = pickColor(index);
-  const borderColor = colorBase.replace('VAR', hovered ? '0.7' : '0.35');
-  const bgColor = colorBase.replace('VAR', hovered ? '0.08' : '0.03');
-  const glowColor = colorBase.replace('VAR', hovered ? '0.25' : '0.1');
+  const borderColor = colorBase.replace('VAR', hovered ? '0.9' : '0.6');
+  const bgColor = colorBase.replace('VAR', hovered ? '0.22' : '0.12');
+  const glowColor = colorBase.replace('VAR', hovered ? '0.4' : '0.2');
 
   useEffect(() => {
     if (!containerWidth || !containerHeight) return;
@@ -95,7 +95,7 @@ export default function VoidBubble({ thread, index, onJoin, containerWidth, cont
         borderRadius: '50%',
         border: `1px solid ${borderColor}`,
         background: bgColor,
-        boxShadow: `0 0 ${hovered ? 40 : 20}px ${glowColor}, inset 0 0 ${hovered ? 20 : 8}px ${colorBase.replace('VAR', '0.04')}`,
+        boxShadow: `0 0 ${hovered ? 48 : 24}px ${glowColor}, inset 0 0 ${hovered ? 24 : 12}px ${colorBase.replace('VAR', '0.1')}`,
         transition: 'box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease',
         display: 'flex',
         flexDirection: 'column',
@@ -121,7 +121,7 @@ export default function VoidBubble({ thread, index, onJoin, containerWidth, cont
       <div style={{
         fontSize: '10px',
         lineHeight: '1.45',
-        color: hovered ? 'hsl(215 41% 18%)' : 'hsl(215 41% 35%)',
+        color: hovered ? 'hsl(215 41% 10%)' : 'hsl(215 41% 25%)',
         textAlign: 'center',
         transition: 'color 0.2s',
         overflow: 'hidden',
