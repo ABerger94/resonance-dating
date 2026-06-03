@@ -14,9 +14,13 @@ import Sandbox from '@/pages/Sandbox';
 import Threads from '@/pages/Threads';
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import ForgotPassword from '@/pages/ForgotPassword';
+import ResetPassword from '@/pages/ResetPassword';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, user } = useAuth();
   const setCurrentUser = useResonanceStore(s => s.setCurrentUser);
 
   // Sync auth user into Zustand store
@@ -37,17 +41,30 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError) {
+  if (authError && authError.type !== 'auth_required') {
     if (authError.type === 'user_not_registered') {
       return <UserNotRegisteredError />;
-    } else if (authError.type === 'auth_required') {
-      navigateToLogin();
-      return null;
     }
+  }
+
+  if (!user) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
   }
 
   return (
     <Routes>
+      <Route path="/login" element={<Navigate to="/void" replace />} />
+      <Route path="/register" element={<Navigate to="/void" replace />} />
+      <Route path="/forgot-password" element={<Navigate to="/void" replace />} />
+      <Route path="/reset-password" element={<Navigate to="/void" replace />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to="/void" replace />} />
         <Route path="/void" element={<Void />} />

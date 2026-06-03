@@ -20,13 +20,19 @@ const DEFAULT_USER = {
 function readDb() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const db = JSON.parse(raw);
+      if (db.currentUser?.id === DEFAULT_USER.id) {
+        db.currentUser = null;
+      }
+      return db;
+    }
   } catch {
     // Fall through to a clean local store.
   }
 
   return {
-    currentUser: DEFAULT_USER,
+    currentUser: null,
     users: [DEFAULT_USER],
     entities: {
       UserProfile: [],
@@ -130,8 +136,9 @@ function createStandaloneClient() {
       async me() {
         const db = readDb();
         if (!db.currentUser) {
-          db.currentUser = DEFAULT_USER;
-          writeDb(db);
+          const error = new Error('Authentication required');
+          error.status = 401;
+          throw error;
         }
         return db.currentUser;
       },
@@ -176,18 +183,18 @@ function createStandaloneClient() {
       setToken() {},
 
       loginWithProvider() {
-        window.location.href = '/';
+        window.location.href = '/login';
       },
 
-      logout(redirectTo = '/') {
+      logout(redirectTo = '/login') {
         const db = readDb();
-        db.currentUser = DEFAULT_USER;
+        db.currentUser = null;
         writeDb(db);
         if (redirectTo) window.location.href = redirectTo;
       },
 
       redirectToLogin() {
-        window.location.href = '/';
+        window.location.href = '/login';
       }
     },
     entities: {
