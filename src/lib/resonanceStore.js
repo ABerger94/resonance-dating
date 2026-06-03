@@ -1,6 +1,7 @@
 // ResonanceContext — Zustand store with localStorage persistence
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { isDevToolsEnabled } from '@/lib/security';
 
 const useResonanceStore = create(
   persist(
@@ -40,8 +41,8 @@ const useResonanceStore = create(
     {
       name: 'resonance-session',
       partialize: (state) => ({
-        seederEnabled: state.seederEnabled,
-        devMode: state.devMode,
+        seederEnabled: isDevToolsEnabled() ? state.seederEnabled : false,
+        devMode: isDevToolsEnabled() ? state.devMode : false,
         animatedUnlocks: state.animatedUnlocks
       })
     }

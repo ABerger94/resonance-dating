@@ -1,13 +1,15 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
-import { calculateResonanceScore, getResonanceState, analyzeMessage } from '@/lib/resonanceEngine';
+import { calculateResonanceScore, getResonanceState, analyzeMessage, getUnlockedFields } from '@/lib/resonanceEngine';
 import { MOCK_PROFILES, generateMockInteractionsForScore } from '@/lib/mockSeeder';
 import ResonanceMeter from '@/components/resonance/ResonanceMeter';
 import DynamicProfile from '@/components/resonance/DynamicProfile';
 import MessageBubble from '@/components/resonance/MessageBubble';
 import DevToolbar from '@/components/resonance/DevToolbar';
 import useResonanceStore from '@/lib/resonanceStore';
+import { useAuth } from '@/lib/AuthContext';
+import { canAccessThread, canUseAdminTools, mergeUnlockedProfileFields, sanitizePublicProfile } from '@/lib/security';
 import { ArrowLeft, Send, Terminal, ChevronRight, ChevronDown } from 'lucide-react';
 
 export default function Sandbox() {
@@ -15,8 +17,11 @@ export default function Sandbox() {
   const [searchParams] = useSearchParams();
   const isMock = searchParams.get('mock') === 'true';
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
 
   const { currentUser, currentProfile, seederEnabled, devMode, devOverrideScore, devSelectedMockId } = useResonanceStore();
+  const activeUser = currentUser || authUser;
+  const adminDevMode = canUseAdminTools(activeUser) && devMode;
 
   const [thread, setThread] = useState(null);
   const [interactions, setInteractions] = useState([]);
@@ -42,12 +47,12 @@ export default function Sandbox() {
 
   // Apply dev score override
   useEffect(() => {
-    if (devMode && devOverrideScore !== null) {
+    if (adminDevMode && devOverrideScore !== null) {
       setDisplayScore(devOverrideScore);
     } else {
       setDisplayScore(resonanceScore);
     }
-  }, [devMode, devOverrideScore, resonanceScore]);
+  }, [adminDevMode, devOverrideScore, resonanceScore]);
 
   const loadThread = async () => {
     setLoading(true);
@@ -76,6 +81,10 @@ export default function Sandbox() {
     } else {
       try {
         const t = await base44.entities.Thread.get(threadId);
+        if (!canAccessThread(t, activeUser?.id)) {
+          navigate('/threads', { replace: true });
+          return;
+        }
         setThread(t);
         setResonanceScore(t.resonance_score || 0);
         setDisplayScore(t.resonance_score || 0);
@@ -84,12 +93,22 @@ export default function Sandbox() {
         setInteractions(ints);
 
         // Load other user's profile
-        if (currentUser && t) {
-          const otherId = t.creator_id === currentUser.id ? t.joiner_id : t.creator_id;
+        if (activeUser && t) {
+          const otherId = t.creator_id === activeUser.id ? t.joiner_id : t.creator_id;
           if (otherId) {
             try {
               const profiles = await base44.entities.UserProfile.filter({ user_id: otherId });
-              if (profiles.length > 0) setOtherProfile(profiles[0]);
+              if (profiles.length > 0) {
+                const publicProfile = sanitizePublicProfile(profiles[0]);
+                const unlocked = getUnlockedFields(t.resonance_score || 0);
+                const shouldLoadPrivate = Object.values(unlocked).some(Boolean);
+                if (shouldLoadPrivate) {
+                  const privateProfiles = await base44.entities.PrivateProfile.filter({ user_id: otherId });
+                  setOtherProfile(mergeUnlockedProfileFields(publicProfile, privateProfiles[0], unlocked));
+                } else {
+                  setOtherProfile(publicProfile);
+                }
+              }
             } catch (e) {}
           }
         }
@@ -102,6 +121,7 @@ export default function Sandbox() {
 
   const handleSend = async () => {
     if (!inputText.trim() || sending) return;
+    if (!isMock && !canAccessThread(thread, activeUser?.id)) return;
     setSending(true);
 
     const content = inputText.trim();
@@ -113,7 +133,7 @@ export default function Sandbox() {
     const newInteraction = {
       id: `local_${now}`,
       thread_id: threadId,
-      sender_id: currentUser?.id || 'you',
+      sender_id: activeUser?.id || 'you',
       sender_handle: currentProfile?.handle || 'YOU',
       content,
       word_count: analysis.wordCount,
@@ -135,14 +155,14 @@ export default function Sandbox() {
     const newState = getResonanceState(newScore);
     setPreviousScore(resonanceScore);
     setResonanceScore(newScore);
-    if (!devMode) setDisplayScore(newScore);
+    if (!adminDevMode) setDisplayScore(newScore);
 
     // Persist if not mock
-    if (!isMock && currentUser) {
+    if (!isMock && activeUser) {
       try {
         await base44.entities.Interaction.create({
           thread_id: threadId,
-          sender_id: currentUser.id,
+          sender_id: activeUser.id,
           sender_handle: currentProfile?.handle || 'SIGNAL',
           content,
           word_count: analysis.wordCount,
@@ -172,7 +192,7 @@ export default function Sandbox() {
     );
   }
 
-  const effectiveScore = (devMode && devOverrideScore !== null) ? devOverrideScore : displayScore;
+  const effectiveScore = (adminDevMode && devOverrideScore !== null) ? devOverrideScore : displayScore;
 
   return (
     <div className="h-screen flex flex-col font-mono" style={{ background: 'hsl(var(--background))' }}>
@@ -388,7 +408,7 @@ export default function Sandbox() {
       </div>
 
       {/* Dev toolbar */}
-      {devMode && <DevToolbar onScoreOverride={(s) => setDisplayScore(s)} />}
+      {adminDevMode && <DevToolbar onScoreOverride={(s) => setDisplayScore(s)} />}
     </div>
   );
 }

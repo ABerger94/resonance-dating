@@ -2,10 +2,13 @@ import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import { MOCK_PROFILES, MOCK_THREADS } from '@/lib/mockSeeder';
 import useResonanceStore from '@/lib/resonanceStore';
+import { useAuth } from '@/lib/AuthContext';
+import { canUseAdminTools } from '@/lib/security';
 import { Settings as SettingsIcon, Trash2, Play, Square } from 'lucide-react';
 
 export default function Settings() {
-  const { seederEnabled, setSeederEnabled, devMode, setDevMode } = useResonanceStore();
+  const { user: authUser } = useAuth();
+  const { currentUser, seederEnabled, setSeederEnabled, devMode, setDevMode } = useResonanceStore();
   const [seeding, setSeeding] = useState(false);
   const [purging, setPurging] = useState(false);
   const [log, setLog] = useState([]);
@@ -13,6 +16,14 @@ export default function Settings() {
   const appendLog = (msg, type = 'info') => {
     setLog(prev => [...prev, { msg, type, ts: Date.now() }]);
   };
+
+  if (!canUseAdminTools(currentUser || authUser)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-mono text-xs tracking-widest text-muted-foreground">
+        ACCESS DENIED
+      </div>
+    );
+  }
 
   const handleToggleSeeder = async () => {
     const newVal = !seederEnabled;
@@ -28,14 +39,18 @@ export default function Settings() {
       for (const p of MOCK_PROFILES) {
         try {
           await base44.entities.UserProfile.create({
+            user_id: p.mock_id,
             handle: p.handle,
-            display_name: p.display_name,
-            bio: p.bio,
-            interests: p.interests,
-            photo_url: p.photo_url,
             tag_cloud: p.tag_cloud,
             is_mock: true,
             mock_id: p.mock_id
+          });
+          await base44.entities.PrivateProfile.create({
+            user_id: p.mock_id,
+            display_name: p.display_name,
+            bio: p.bio,
+            interests: p.interests,
+            photo_url: p.photo_url
           });
           appendLog(`Seeded profile: ${p.handle}`, 'success');
         } catch (e) {
@@ -77,6 +92,12 @@ export default function Settings() {
     try {
       const mockProfiles = await base44.entities.UserProfile.filter({ is_mock: true });
       for (const p of mockProfiles) {
+        if (p.mock_id) {
+          const privateProfiles = await base44.entities.PrivateProfile.filter({ user_id: p.mock_id });
+          for (const privateProfile of privateProfiles) {
+            await base44.entities.PrivateProfile.delete(privateProfile.id);
+          }
+        }
         await base44.entities.UserProfile.delete(p.id);
       }
       appendLog(`Deleted ${mockProfiles.length} mock profiles`, 'warn');

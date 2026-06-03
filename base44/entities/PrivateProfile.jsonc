@@ -1,0 +1,32 @@
+{
+  "name": "PrivateProfile",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Reference to the auth user ID that owns this private profile data"
+    },
+    "display_name": {
+      "type": "string",
+      "description": "Real name, revealed only after the server/client unlock policy allows it"
+    },
+    "bio": {
+      "type": "string",
+      "description": "Private bio text"
+    },
+    "interests": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Private interest tags"
+    },
+    "photo_url": {
+      "type": "string",
+      "description": "Private profile photo URL"
+    }
+  },
+  "required": [
+    "user_id"
+  ]
+}

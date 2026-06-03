@@ -1,17 +1,22 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import { Radio, MessageSquare, User, Settings } from 'lucide-react';
 import ResonanceLogo from '@/components/ResonanceLogo';
+import { useAuth } from '@/lib/AuthContext';
+import { canUseAdminTools } from '@/lib/security';
 
-const NAV_ITEMS = [
+const BASE_NAV_ITEMS = [
   { to: '/void', label: 'VOID', icon: Radio },
   { to: '/threads', label: 'THREADS', icon: MessageSquare },
   { to: '/profile', label: 'PROFILE', icon: User },
-  { to: '/settings', label: 'SETTINGS', icon: Settings },
 ];
 
 export default function Layout() {
   const location = useLocation();
+  const { user } = useAuth();
   const isSandbox = location.pathname.startsWith('/sandbox');
+  const navItems = canUseAdminTools(user)
+    ? [...BASE_NAV_ITEMS, { to: '/settings', label: 'SETTINGS', icon: Settings }]
+    : BASE_NAV_ITEMS;
 
   return (
     <div className="min-h-screen flex flex-col font-mono" style={{ background: 'hsl(var(--background))' }}>
@@ -47,7 +52,7 @@ export default function Layout() {
             minHeight: '64px'
           }}
         >
-          {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
+          {navItems.map(({ to, label, icon: Icon }) => {
             const active = location.pathname === to || (to !== '/' && location.pathname.startsWith(to));
             return (
               <NavLink

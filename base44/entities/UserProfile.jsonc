@@ -10,25 +10,6 @@
       "type": "string",
       "description": "Anonymous display handle (e.g. SIGNAL_42)"
     },
-    "display_name": {
-      "type": "string",
-      "description": "Real name \u2014 locked until score >= 25%"
-    },
-    "bio": {
-      "type": "string",
-      "description": "Bio text \u2014 locked until score >= 50%"
-    },
-    "interests": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "description": "Interest tags \u2014 locked until score >= 75%"
-    },
-    "photo_url": {
-      "type": "string",
-      "description": "Profile photo URL \u2014 locked until score >= 100%"
-    },
     "tag_cloud": {
       "type": "array",
       "items": {

@@ -3,6 +3,7 @@ import { base44 } from '@/api/base44Client';
 import useResonanceStore from '@/lib/resonanceStore';
 import { User, RefreshCw, Upload, X } from 'lucide-react';
 
+const MAX_PROFILE_IMAGE_BYTES = 5 * 1024 * 1024;
 const ADJECTIVES = ['SIGNAL', 'VOID', 'ECHO', 'PHASE', 'NULL', 'STATIC', 'DEEP', 'CARRIER', 'QUANTA', 'FRINGE', 'CIPHER', 'FLUX'];
 const NUMBERS = () => Math.floor(Math.random() * 90) + 10;
 
@@ -23,6 +24,7 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [profileId, setProfileId] = useState(null);
+  const [privateProfileId, setPrivateProfileId] = useState(null);
   const [uploading, setUploading] = useState(false);
   const photoInputRef = useRef(null);
 
@@ -34,16 +36,20 @@ export default function Profile() {
     if (!currentUser) return;
     try {
       const profiles = await base44.entities.UserProfile.filter({ user_id: currentUser.id });
+      const privateProfiles = await base44.entities.PrivateProfile.filter({ user_id: currentUser.id });
+      const privateProfile = privateProfiles[0];
+      if (privateProfile) setPrivateProfileId(privateProfile.id);
+
       if (profiles.length > 0) {
         const p = profiles[0];
         setProfileId(p.id);
         setCurrentProfile(p);
         setForm({
           handle: p.handle || '',
-          display_name: p.display_name || '',
-          bio: p.bio || '',
-          interests: Array.isArray(p.interests) ? p.interests.join(', ') : (p.interests || ''),
-          photo_url: p.photo_url || '',
+          display_name: privateProfile?.display_name || p.display_name || '',
+          bio: privateProfile?.bio || p.bio || '',
+          interests: Array.isArray(privateProfile?.interests) ? privateProfile.interests.join(', ') : (Array.isArray(p.interests) ? p.interests.join(', ') : ''),
+          photo_url: privateProfile?.photo_url || p.photo_url || '',
           tag_cloud: Array.isArray(p.tag_cloud) ? p.tag_cloud.join(', ') : (p.tag_cloud || '')
         });
       } else {
@@ -58,23 +64,32 @@ export default function Profile() {
   const handleSave = async () => {
     if (!currentUser) return;
     setSaving(true);
-    const data = {
+    const publicData = {
       user_id: currentUser.id,
       handle: form.handle,
+      tag_cloud: form.tag_cloud.split(',').map(s => s.trim()).filter(Boolean),
+      is_mock: false
+    };
+    const privateData = {
+      user_id: currentUser.id,
       display_name: form.display_name,
       bio: form.bio,
       interests: form.interests.split(',').map(s => s.trim()).filter(Boolean),
-      photo_url: form.photo_url,
-      tag_cloud: form.tag_cloud.split(',').map(s => s.trim()).filter(Boolean),
-      is_mock: false
+      photo_url: form.photo_url
     };
     try {
       let profile;
       if (profileId) {
-        profile = await base44.entities.UserProfile.update(profileId, data);
+        profile = await base44.entities.UserProfile.update(profileId, publicData);
       } else {
-        profile = await base44.entities.UserProfile.create(data);
+        profile = await base44.entities.UserProfile.create(publicData);
         setProfileId(profile.id);
+      }
+      if (privateProfileId) {
+        await base44.entities.PrivateProfile.update(privateProfileId, privateData);
+      } else {
+        const privateProfile = await base44.entities.PrivateProfile.create(privateData);
+        setPrivateProfileId(privateProfile.id);
       }
       setCurrentProfile(profile);
       setSaved(true);
@@ -89,8 +104,8 @@ export default function Profile() {
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Basic content type check — no explicit images
     if (!file.type.startsWith('image/')) return;
+    if (file.size > MAX_PROFILE_IMAGE_BYTES) return;
     setUploading(true);
     try {
       const result = await base44.integrations.Core.UploadFile({ file });

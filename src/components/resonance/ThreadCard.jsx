@@ -1,5 +1,5 @@
 import { formatDistanceToNow } from 'date-fns';
-import { renderSegmentedBar, getResonanceState, getStateColor } from '@/lib/resonanceEngine';
+import { renderSegmentedBar } from '@/lib/resonanceEngine';
 import { Radio, Lock, Zap, MessageSquare } from 'lucide-react';
 
 const STATE_ICONS = {

@@ -1,10 +1,12 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { MOCK_THREADS } from '@/lib/mockSeeder';
 import { getRandomPrompt } from '@/lib/promptEngine';
 import VoidBubble from '@/components/resonance/VoidBubble';
 import useResonanceStore from '@/lib/resonanceStore';
+import { useAuth } from '@/lib/AuthContext';
+import { canUseAdminTools, isJoinableThread } from '@/lib/security';
 import { Radio, Plus, X } from 'lucide-react';
 
 export default function Void() {
@@ -19,11 +21,14 @@ export default function Void() {
   const [casting, setCasting] = useState(false);
   const [useCustomText, setUseCustomText] = useState(false);
   const [customText, setCustomText] = useState('');
+  const { user: authUser } = useAuth();
   const { seederEnabled, currentUser, currentProfile } = useResonanceStore();
+  const activeUser = currentUser || authUser;
+  const showMockData = canUseAdminTools(activeUser) && seederEnabled;
 
   useEffect(() => {
     loadVoidThreads();
-  }, [seederEnabled]);
+  }, [showMockData]);
 
   useEffect(() => {
     setSelectedPrompt(getRandomPrompt());
@@ -33,11 +38,11 @@ export default function Void() {
     setLoading(true);
     try {
       const real = await base44.entities.Thread.filter({ status: 'void' }, '-created_date', 30);
-      const mockData = seederEnabled ? MOCK_THREADS : [];
+      const mockData = showMockData ? MOCK_THREADS : [];
       setThreads([...real, ...mockData]);
     } catch (e) {
       console.error(e);
-      if (seederEnabled) setThreads(MOCK_THREADS);
+      if (showMockData) setThreads(MOCK_THREADS);
     } finally {
       setLoading(false);
     }
@@ -49,8 +54,9 @@ export default function Void() {
       return;
     }
     try {
-      const me = currentUser;
+      const me = activeUser;
       if (!me) return;
+      if (!isJoinableThread(thread, me.id)) return;
       await base44.entities.Thread.update(thread.id, {
         joiner_id: me.id,
         joiner_handle: currentProfile?.handle || `SIGNAL_${me.id.slice(-4).toUpperCase()}`,
@@ -64,7 +70,7 @@ export default function Void() {
   };
 
   const handleCastThread = async () => {
-    if (!selectedPrompt || !currentUser) return;
+    if (!selectedPrompt || !activeUser) return;
     setCasting(true);
     try {
       const promptText = useCustomText ? customText.trim() : selectedPrompt.text;
@@ -73,8 +79,8 @@ export default function Void() {
         : (useCustomText ? [] : selectedPrompt.tags);
 
       const thread = await base44.entities.Thread.create({
-        creator_id: currentUser.id,
-        creator_handle: currentProfile?.handle || `NODE_${currentUser.id.slice(-4).toUpperCase()}`,
+        creator_id: activeUser.id,
+        creator_handle: currentProfile?.handle || `NODE_${activeUser.id.slice(-4).toUpperCase()}`,
         prompt_id: useCustomText ? null : selectedPrompt.id,
         prompt_text: promptText,
         topic_tags: tags,

@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Layout from '@/components/Layout';
 import useResonanceStore from '@/lib/resonanceStore';
+import { canUseAdminTools } from '@/lib/security';
 import Void from '@/pages/Void';
 import Sandbox from '@/pages/Sandbox';
 import Threads from '@/pages/Threads';
@@ -52,7 +53,7 @@ const AuthenticatedApp = () => {
         <Route path="/void" element={<Void />} />
         <Route path="/threads" element={<Threads />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Settings />} />
+        {canUseAdminTools(user) && <Route path="/settings" element={<Settings />} />}
       </Route>
       <Route path="/sandbox/:threadId" element={<Sandbox />} />
       <Route path="*" element={<PageNotFound />} />
