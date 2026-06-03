@@ -5,6 +5,7 @@ import { clampMatchRadiusMiles, resolveCoordinates, DEFAULT_MATCH_RADIUS_MILES }
 import { clampAge, normalizeGenderPreference, normalizePreferenceAges, normalizeSex } from '@/lib/profilePreferences';
 import { useAuth } from '@/lib/AuthContext';
 import { Check, CornerDownRight, LockKeyhole, LogOut, RefreshCw, TriangleAlert, Upload, User, X } from 'lucide-react';
+import { clearPendingRegistration, loadPendingRegistration } from '@/lib/pendingRegistration';
 
 const MAX_PROFILE_PHOTOS = 6;
 const MAX_PROFILE_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -22,8 +23,8 @@ function normalizePhotoUrls(profile) {
 }
 
 export default function Profile() {
-  const { currentUser, currentProfile, setCurrentProfile } = useResonanceStore();
-  const { logout } = useAuth();
+  const { currentUser, currentProfile, setCurrentUser, setCurrentProfile } = useResonanceStore();
+  const { logout, checkUserAuth } = useAuth();
   const [form, setForm] = useState({
     handle: '',
     display_name: '',
@@ -42,6 +43,7 @@ export default function Profile() {
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState('');
   const [profileId, setProfileId] = useState(null);
   const [privateProfileId, setPrivateProfileId] = useState(null);
   const [uploading, setUploading] = useState(false);
@@ -92,32 +94,52 @@ export default function Profile() {
   const handleSave = async () => {
     if (!currentUser) return;
     setSaving(true);
-    const coordinates = resolveCoordinates(form.location);
-    const preferenceAges = normalizePreferenceAges(form.preference_min_age, form.preference_max_age);
-    const publicData = {
-      user_id: currentUser.id,
-      handle: form.handle,
-      tag_cloud: form.tag_cloud.split(',').map(s => s.trim()).filter(Boolean),
-      location: form.location.trim(),
-      age: clampAge(form.age),
-      sex: normalizeSex(form.sex),
-      preference_min_age: preferenceAges.minAge,
-      preference_max_age: preferenceAges.maxAge,
-      preference_gender: normalizeGenderPreference(form.preference_gender),
-      latitude: coordinates?.latitude,
-      longitude: coordinates?.longitude,
-      match_radius_miles: clampMatchRadiusMiles(form.match_radius_miles),
-      is_mock: false
-    };
-    const privateData = {
-      user_id: currentUser.id,
-      display_name: form.display_name,
-      bio: form.bio,
-      interests: form.interests.split(',').map(s => s.trim()).filter(Boolean),
-      photo_url: form.photo_urls[0] || '',
-      photo_urls: form.photo_urls.slice(0, MAX_PROFILE_PHOTOS)
-    };
+    setSaveError('');
     try {
+      let userForProfile = currentUser;
+      const pendingRegistration = loadPendingRegistration();
+      if (!profileId && currentUser.pending_registration && !pendingRegistration) {
+        throw new Error('Registration details expired. Please go back to registration and try again.');
+      }
+      if (!profileId && pendingRegistration?.email && pendingRegistration?.password) {
+        const registration = await base44.auth.register(pendingRegistration);
+        if (registration?.access_token) {
+          base44.auth.setToken(registration.access_token);
+        }
+        if (registration?.user) {
+          userForProfile = registration.user;
+          setCurrentUser(registration.user);
+        }
+        clearPendingRegistration();
+        await checkUserAuth();
+      }
+
+      const coordinates = resolveCoordinates(form.location);
+      const preferenceAges = normalizePreferenceAges(form.preference_min_age, form.preference_max_age);
+      const publicData = {
+        user_id: userForProfile.id,
+        handle: form.handle,
+        tag_cloud: form.tag_cloud.split(',').map(s => s.trim()).filter(Boolean),
+        location: form.location.trim(),
+        age: clampAge(form.age),
+        sex: normalizeSex(form.sex),
+        preference_min_age: preferenceAges.minAge,
+        preference_max_age: preferenceAges.maxAge,
+        preference_gender: normalizeGenderPreference(form.preference_gender),
+        latitude: coordinates?.latitude,
+        longitude: coordinates?.longitude,
+        match_radius_miles: clampMatchRadiusMiles(form.match_radius_miles),
+        is_mock: false
+      };
+      const privateData = {
+        user_id: userForProfile.id,
+        display_name: form.display_name,
+        bio: form.bio,
+        interests: form.interests.split(',').map(s => s.trim()).filter(Boolean),
+        photo_url: form.photo_urls[0] || '',
+        photo_urls: form.photo_urls.slice(0, MAX_PROFILE_PHOTOS)
+      };
+
       let profile;
       if (profileId) {
         profile = await base44.entities.UserProfile.update(profileId, publicData);
@@ -136,6 +158,7 @@ export default function Profile() {
       setTimeout(() => setSaved(false), 2000);
     } catch (e) {
       console.error(e);
+      setSaveError(e.message || 'Failed to save profile.');
     } finally {
       setSaving(false);
     }
@@ -362,6 +385,12 @@ export default function Profile() {
           </div>
         ))}
 
+        {saveError && (
+          <div className="border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+            {saveError}
+          </div>
+        )}
+
         <button
           onClick={handleSave}
           disabled={saving}
@@ -372,7 +401,7 @@ export default function Profile() {
             color: '#10B981'
           }}
         >
-          {saving ? 'SAVING...' : saved ? <><Check size={12} className="inline mr-1" />PROFILE SAVED</> : <><CornerDownRight size={12} className="inline mr-1" />SAVE PROFILE</>}
+          {saving ? 'SAVING...' : saved ? <><Check size={12} className="inline mr-1" />PROFILE SAVED</> : <><CornerDownRight size={12} className="inline mr-1" />{profileId ? 'SAVE PROFILE' : 'CREATE PROFILE'}</>}
         </button>
       </div>
     </div>

@@ -6,6 +6,7 @@ const { appId, token, functionsVersion, appBaseUrl } = appParams;
 const hasBase44Config = Boolean(appId && appBaseUrl);
 
 const STORAGE_KEY = 'resonance_local_base44';
+const REAL_DATA_PURGE_KEY = 'resonance_real_data_purge_2026_06_03';
 
 const nowIso = () => new Date().toISOString();
 const newId = (prefix) => `${prefix}_${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}`;
@@ -35,12 +36,26 @@ function readDb() {
       if (db.currentUser?.email_verified !== true) {
         db.currentUser = null;
       }
+      if (localStorage.getItem(REAL_DATA_PURGE_KEY) !== 'complete') {
+        db.currentUser = null;
+        db.users = [DEFAULT_USER];
+        db.entities = {
+          ...db.entities,
+          UserProfile: (db.entities?.UserProfile || []).filter((profile) => profile.is_mock === true),
+          PrivateProfile: (db.entities?.PrivateProfile || []).filter((profile) => profile.user_id?.startsWith('mock_')),
+          Thread: (db.entities?.Thread || []).filter((thread) => thread.is_mock === true),
+          Interaction: (db.entities?.Interaction || []).filter((interaction) => interaction.is_mock === true)
+        };
+        writeDb(db);
+        localStorage.setItem(REAL_DATA_PURGE_KEY, 'complete');
+      }
       return db;
     }
   } catch {
     // Fall through to a clean local store.
   }
 
+  localStorage.setItem(REAL_DATA_PURGE_KEY, 'complete');
   return {
     currentUser: null,
     users: [DEFAULT_USER],
@@ -194,6 +209,7 @@ function createStandaloneClient() {
           role: existingIndex >= 0 ? db.users[existingIndex].role : 'user',
           full_name: normalizedEmail.split('@')[0],
           email_verified: true,
+          pending_registration: false,
           verification_code: undefined,
           verification_expires_at: undefined
         };

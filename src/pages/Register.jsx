@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
+import { savePendingRegistration } from "@/lib/pendingRegistration";
 
 export default function Register() {
   const [email, setEmail] = useState("");
@@ -24,10 +25,7 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      const result = await base44.auth.register({ email, password });
-      if (result?.access_token) {
-        base44.auth.setToken(result.access_token);
-      }
+      savePendingRegistration({ email, password });
       window.location.href = "/profile";
     } catch (err) {
       setError(err.message || "Registration failed");
