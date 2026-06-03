@@ -8,7 +8,8 @@ export default function ResonanceLogo({ size = 30, className = '', color = 'hsl(
       viewBox="0 0 120 120"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
+      className={`resonance-logo ${className}`.trim()}
+      style={{ color }}
     >
       <path d="M 56 16 A 44 44 0 0 0 56 104" stroke={color} strokeWidth={sw} strokeLinecap="round" fill="none" />
       <path d="M 56 31 A 29 29 0 0 0 56 89" stroke={color} strokeWidth={sw} strokeLinecap="round" fill="none" />
