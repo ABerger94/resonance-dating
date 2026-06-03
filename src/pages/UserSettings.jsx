@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { useAuth } from '@/lib/AuthContext';
 import useResonanceStore from '@/lib/resonanceStore';
 import { clampMatchRadiusMiles, resolveCoordinates, DEFAULT_MATCH_RADIUS_MILES } from '@/lib/location';
+import { clampAge, normalizeGenderPreference, normalizePreferenceAges, normalizeSex } from '@/lib/profilePreferences';
 import { LogOut, MapPin, Save, Settings as SettingsIcon, User } from 'lucide-react';
 
 export default function UserSettings() {
@@ -14,6 +15,11 @@ export default function UserSettings() {
   const [form, setForm] = useState({
     handle: '',
     location: '',
+    age: 18,
+    sex: 'other',
+    preference_min_age: 18,
+    preference_max_age: 45,
+    preference_gender: 'all',
     match_radius_miles: DEFAULT_MATCH_RADIUS_MILES
   });
   const [loading, setLoading] = useState(true);
@@ -35,9 +41,15 @@ export default function UserSettings() {
       if (profile) {
         setProfileId(profile.id);
         setCurrentProfile(profile);
+        const preferenceAges = normalizePreferenceAges(profile.preference_min_age, profile.preference_max_age);
         setForm({
           handle: profile.handle || '',
           location: profile.location || '',
+          age: clampAge(profile.age),
+          sex: normalizeSex(profile.sex),
+          preference_min_age: preferenceAges.minAge,
+          preference_max_age: preferenceAges.maxAge,
+          preference_gender: normalizeGenderPreference(profile.preference_gender),
           match_radius_miles: clampMatchRadiusMiles(profile.match_radius_miles)
         });
       } else {
@@ -45,6 +57,11 @@ export default function UserSettings() {
         setForm({
           handle: currentProfile?.handle || '',
           location: '',
+          age: 18,
+          sex: 'other',
+          preference_min_age: 18,
+          preference_max_age: 45,
+          preference_gender: 'all',
           match_radius_miles: DEFAULT_MATCH_RADIUS_MILES
         });
       }
@@ -66,10 +83,16 @@ export default function UserSettings() {
     setSaved(false);
     setError('');
     const coordinates = resolveCoordinates(form.location);
+    const preferenceAges = normalizePreferenceAges(form.preference_min_age, form.preference_max_age);
     const data = {
       user_id: activeUser.id,
       handle: form.handle.trim(),
       location: form.location.trim(),
+      age: clampAge(form.age),
+      sex: normalizeSex(form.sex),
+      preference_min_age: preferenceAges.minAge,
+      preference_max_age: preferenceAges.maxAge,
+      preference_gender: normalizeGenderPreference(form.preference_gender),
       latitude: coordinates?.latitude,
       longitude: coordinates?.longitude,
       match_radius_miles: clampMatchRadiusMiles(form.match_radius_miles),
@@ -160,6 +183,80 @@ export default function UserSettings() {
                   className="w-full bg-transparent border px-3 py-2 text-base text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/30"
                   style={{ borderColor: 'hsl(var(--border))', fontFamily: "'JetBrains Mono', monospace" }}
                 />
+              </label>
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block space-y-2">
+                  <span className="text-xs tracking-widest text-muted-foreground">AGE</span>
+                  <input
+                    type="number"
+                    min={18}
+                    max={120}
+                    value={form.age}
+                    onChange={event => setForm(current => ({ ...current, age: event.target.valueAsNumber }))}
+                    className="w-full bg-transparent border px-3 py-2 text-base text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/30"
+                    style={{ borderColor: 'hsl(var(--border))', fontFamily: "'JetBrains Mono', monospace" }}
+                  />
+                </label>
+
+                <label className="block space-y-2">
+                  <span className="text-xs tracking-widest text-muted-foreground">SEX</span>
+                  <select
+                    value={form.sex}
+                    onChange={event => setForm(current => ({ ...current, sex: event.target.value }))}
+                    className="w-full bg-transparent border px-3 py-2 text-base text-foreground outline-none focus:border-primary/30"
+                    style={{ borderColor: 'hsl(var(--border))', fontFamily: "'JetBrains Mono', monospace" }}
+                  >
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                    <option value="non_binary">Non-binary</option>
+                    <option value="other">Other</option>
+                  </select>
+                </label>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <label className="block space-y-2">
+                  <span className="text-xs tracking-widest text-muted-foreground">MIN AGE</span>
+                  <input
+                    type="number"
+                    min={18}
+                    max={120}
+                    value={form.preference_min_age}
+                    onChange={event => setForm(current => ({ ...current, preference_min_age: event.target.valueAsNumber }))}
+                    className="w-full bg-transparent border px-3 py-2 text-base text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/30"
+                    style={{ borderColor: 'hsl(var(--border))', fontFamily: "'JetBrains Mono', monospace" }}
+                  />
+                </label>
+
+                <label className="block space-y-2">
+                  <span className="text-xs tracking-widest text-muted-foreground">MAX AGE</span>
+                  <input
+                    type="number"
+                    min={18}
+                    max={120}
+                    value={form.preference_max_age}
+                    onChange={event => setForm(current => ({ ...current, preference_max_age: event.target.valueAsNumber }))}
+                    className="w-full bg-transparent border px-3 py-2 text-base text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/30"
+                    style={{ borderColor: 'hsl(var(--border))', fontFamily: "'JetBrains Mono', monospace" }}
+                  />
+                </label>
+              </div>
+
+              <label className="block space-y-2">
+                <span className="text-xs tracking-widest text-muted-foreground">GENDER PREFERENCE</span>
+                <select
+                  value={form.preference_gender}
+                  onChange={event => setForm(current => ({ ...current, preference_gender: event.target.value }))}
+                  className="w-full bg-transparent border px-3 py-2 text-base text-foreground outline-none focus:border-primary/30"
+                  style={{ borderColor: 'hsl(var(--border))', fontFamily: "'JetBrains Mono', monospace" }}
+                >
+                  <option value="all">All</option>
+                  <option value="female">Female</option>
+                  <option value="male">Male</option>
+                  <option value="non_binary">Non-binary</option>
+                  <option value="other">Other</option>
+                </select>
               </label>
 
               <label className="block space-y-2">

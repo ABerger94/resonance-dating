@@ -4,6 +4,7 @@ import { base44 } from '@/api/base44Client';
 import { MOCK_THREADS } from '@/lib/mockSeeder';
 import { getRandomPrompt } from '@/lib/promptEngine';
 import { isWithinMatchRadius } from '@/lib/location';
+import { isWithinDatingPreferences } from '@/lib/profilePreferences';
 import VoidBubble from '@/components/resonance/VoidBubble';
 import useResonanceStore from '@/lib/resonanceStore';
 import { useAuth } from '@/lib/AuthContext';
@@ -29,7 +30,15 @@ export default function Void() {
 
   useEffect(() => {
     loadVoidThreads();
-  }, [showMockData, activeUser?.id, currentProfile?.location, currentProfile?.match_radius_miles]);
+  }, [
+    showMockData,
+    activeUser?.id,
+    currentProfile?.location,
+    currentProfile?.match_radius_miles,
+    currentProfile?.preference_min_age,
+    currentProfile?.preference_max_age,
+    currentProfile?.preference_gender
+  ]);
 
   useEffect(() => {
     setSelectedPrompt(getRandomPrompt());
@@ -45,7 +54,8 @@ export default function Void() {
         ? real.filter(thread => {
             if (thread.creator_id === activeUser.id || thread.joiner_id === activeUser.id) return false;
             const creatorProfile = profileByUserId.get(thread.creator_id);
-            return isWithinMatchRadius(currentProfile, creatorProfile);
+            return isWithinMatchRadius(currentProfile, creatorProfile) &&
+              isWithinDatingPreferences(currentProfile, creatorProfile);
           })
         : real;
       const mockData = showMockData ? MOCK_THREADS : [];

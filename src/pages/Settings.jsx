@@ -42,6 +42,15 @@ export default function Settings() {
             user_id: p.mock_id,
             handle: p.handle,
             tag_cloud: p.tag_cloud,
+            location: p.location,
+            age: p.age,
+            sex: p.sex,
+            preference_min_age: p.preference_min_age,
+            preference_max_age: p.preference_max_age,
+            preference_gender: p.preference_gender,
+            latitude: p.latitude,
+            longitude: p.longitude,
+            match_radius_miles: p.match_radius_miles,
             is_mock: true,
             mock_id: p.mock_id
           });

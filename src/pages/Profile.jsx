@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import useResonanceStore from '@/lib/resonanceStore';
 import { clampMatchRadiusMiles, resolveCoordinates, DEFAULT_MATCH_RADIUS_MILES } from '@/lib/location';
+import { clampAge, normalizeGenderPreference, normalizePreferenceAges, normalizeSex } from '@/lib/profilePreferences';
 import { useAuth } from '@/lib/AuthContext';
 import { User, RefreshCw, Upload, X, LogOut } from 'lucide-react';
 
@@ -31,6 +32,11 @@ export default function Profile() {
     photo_url: '',
     photo_urls: [],
     location: '',
+    age: 18,
+    sex: 'other',
+    preference_min_age: 18,
+    preference_max_age: 45,
+    preference_gender: 'all',
     match_radius_miles: DEFAULT_MATCH_RADIUS_MILES,
     tag_cloud: ''
   });
@@ -66,6 +72,11 @@ export default function Profile() {
           photo_url: photoUrls[0] || '',
           photo_urls: photoUrls,
           location: p.location || '',
+          age: clampAge(p.age),
+          sex: normalizeSex(p.sex),
+          preference_min_age: normalizePreferenceAges(p.preference_min_age, p.preference_max_age).minAge,
+          preference_max_age: normalizePreferenceAges(p.preference_min_age, p.preference_max_age).maxAge,
+          preference_gender: normalizeGenderPreference(p.preference_gender),
           match_radius_miles: clampMatchRadiusMiles(p.match_radius_miles),
           tag_cloud: Array.isArray(p.tag_cloud) ? p.tag_cloud.join(', ') : (p.tag_cloud || '')
         });
@@ -82,11 +93,17 @@ export default function Profile() {
     if (!currentUser) return;
     setSaving(true);
     const coordinates = resolveCoordinates(form.location);
+    const preferenceAges = normalizePreferenceAges(form.preference_min_age, form.preference_max_age);
     const publicData = {
       user_id: currentUser.id,
       handle: form.handle,
       tag_cloud: form.tag_cloud.split(',').map(s => s.trim()).filter(Boolean),
       location: form.location.trim(),
+      age: clampAge(form.age),
+      sex: normalizeSex(form.sex),
+      preference_min_age: preferenceAges.minAge,
+      preference_max_age: preferenceAges.maxAge,
+      preference_gender: normalizeGenderPreference(form.preference_gender),
       latitude: coordinates?.latitude,
       longitude: coordinates?.longitude,
       match_radius_miles: clampMatchRadiusMiles(form.match_radius_miles),
@@ -171,6 +188,22 @@ export default function Profile() {
     )},
     { key: 'display_name', label: 'REAL NAME', placeholder: 'Your actual name', hint: 'Unlocked to others at 25% resonance.', locked: true },
     { key: 'location', label: 'AREA', placeholder: 'Brooklyn, NY or 40.6782,-73.9442', hint: 'Used to show local Void threads within your radius.' },
+    { key: 'age', label: 'AGE', placeholder: '30', hint: 'Used for matchmaking filters.', type: 'number', min: 18, max: 120 },
+    { key: 'sex', label: 'SEX', hint: 'Used for profile and matchmaking filters.', select: [
+      ['female', 'Female'],
+      ['male', 'Male'],
+      ['non_binary', 'Non-binary'],
+      ['other', 'Other']
+    ]},
+    { key: 'preference_min_age', label: 'MIN AGE', placeholder: '18', hint: 'Youngest age you want to see.', type: 'number', min: 18, max: 120 },
+    { key: 'preference_max_age', label: 'MAX AGE', placeholder: '45', hint: 'Oldest age you want to see.', type: 'number', min: 18, max: 120 },
+    { key: 'preference_gender', label: 'GENDER PREFERENCE', hint: 'Who should appear in your Void.', select: [
+      ['all', 'All'],
+      ['female', 'Female'],
+      ['male', 'Male'],
+      ['non_binary', 'Non-binary'],
+      ['other', 'Other']
+    ]},
     { key: 'match_radius_miles', label: 'MATCH RADIUS', placeholder: '50', hint: 'Maximum distance for Void threads and matches.', type: 'number' },
     { key: 'interests', label: 'INTERESTS', placeholder: 'philosophy, jazz, mycology...', hint: 'Comma-separated. Unlocked at 50% resonance.', locked: true },
     { key: 'bio', label: 'BIO', placeholder: 'Tell the truth about yourself...', hint: 'Unlocked at 75% resonance.', locked: true, multiline: true },
@@ -284,13 +317,27 @@ export default function Profile() {
                   {form.photo_urls.length}/{MAX_PROFILE_PHOTOS} PHOTOS - JPG, PNG, WEBP or GIF - No explicit content
                 </div>
               </div>
+            ) : field.select ? (
+              <select
+                value={form[field.key]}
+                onChange={e => setForm(f => ({ ...f, [field.key]: e.target.value }))}
+                className="w-full bg-transparent border px-3 py-2 text-base text-foreground outline-none focus:border-primary/30"
+                style={{
+                  borderColor: field.locked ? 'rgba(245,158,11,0.2)' : 'hsl(var(--border))',
+                  fontFamily: "'JetBrains Mono', monospace"
+                }}
+              >
+                {field.select.map(([value, label]) => (
+                  <option key={value} value={value}>{label}</option>
+                ))}
+              </select>
             ) : field.multiline ? (
               <textarea
                 value={form[field.key]}
                 onChange={e => setForm(f => ({ ...f, [field.key]: e.target.value }))}
                 placeholder={field.placeholder}
                 rows={4}
-                className="w-full bg-transparent border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/30 resize-none"
+                className="w-full bg-transparent border px-3 py-2 text-base text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/30 resize-none"
                 style={{ 
                   borderColor: field.locked ? 'rgba(245,158,11,0.2)' : 'hsl(var(--border))',
                   fontFamily: "'JetBrains Mono', monospace"
@@ -299,10 +346,12 @@ export default function Profile() {
             ) : (
               <input
                 type={field.type || 'text'}
+                min={field.min}
+                max={field.max}
                 value={form[field.key]}
                 onChange={e => setForm(f => ({ ...f, [field.key]: field.type === 'number' ? e.target.valueAsNumber : e.target.value }))}
                 placeholder={field.placeholder}
-                className="w-full bg-transparent border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/30"
+                className="w-full bg-transparent border px-3 py-2 text-base text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/30"
                 style={{ 
                   borderColor: field.locked ? 'rgba(245,158,11,0.2)' : 'hsl(var(--border))',
                   fontFamily: "'JetBrains Mono', monospace"

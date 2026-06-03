@@ -21,6 +21,42 @@
       "type": "string",
       "description": "Coarse user location used for local Void and matchmaking filters"
     },
+    "age": {
+      "type": "number",
+      "description": "User age used for matchmaking filters"
+    },
+    "sex": {
+      "type": "string",
+      "enum": [
+        "female",
+        "male",
+        "non_binary",
+        "other"
+      ],
+      "description": "User sex/gender marker used for profile and matchmaking filters"
+    },
+    "preference_min_age": {
+      "type": "number",
+      "default": 18,
+      "description": "Minimum age preference for matchmaking"
+    },
+    "preference_max_age": {
+      "type": "number",
+      "default": 45,
+      "description": "Maximum age preference for matchmaking"
+    },
+    "preference_gender": {
+      "type": "string",
+      "enum": [
+        "all",
+        "female",
+        "male",
+        "non_binary",
+        "other"
+      ],
+      "default": "all",
+      "description": "Gender preference for matchmaking"
+    },
     "latitude": {
       "type": "number",
       "description": "Optional latitude for radius-based matching"
