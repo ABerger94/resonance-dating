@@ -7,9 +7,9 @@ import {
 import { useUserStore, validateUserProfileDraft } from '@/stores/useUserStore';
 import { useNavigate } from 'react-router-dom';
 
-const steps = ['Identity', 'Location', 'Preferences'] as const;
+const steps = ['Identity', 'Location', 'Preferences'];
 
-function numberFromInput(value: string): number {
+function numberFromInput(value) {
   return Number.parseInt(value, 10);
 }
 
@@ -17,19 +17,19 @@ export default function OnboardingFlow() {
   const createProfile = useUserStore(state => state.createProfile);
   const navigate = useNavigate();
   const [stepIndex, setStepIndex] = useState(0);
-  const [draft, setDraft] = useState<UserProfileDraft>(createEmptyUserProfileDraft);
-  const [errors, setErrors] = useState<ProfileValidationErrors>({});
+  const [draft, setDraft] = useState(createEmptyUserProfileDraft);
+  const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const step = steps[stepIndex];
   const validationErrors = useMemo(() => validateUserProfileDraft(draft), [draft]);
 
-  const updateDraft = useCallback((updates: Partial<UserProfileDraft>) => {
+  const updateDraft = useCallback((updates) => {
     setDraft(current => ({ ...current, ...updates }));
     setErrors({});
   }, []);
 
-  const updatePreferences = useCallback((updates: Partial<DatingPreferences>) => {
+  const updatePreferences = useCallback((updates) => {
     setDraft(current => ({
       ...current,
       datingPreferences: {
@@ -143,7 +143,7 @@ export default function OnboardingFlow() {
               <select
                 className="w-full border bg-transparent px-3 py-2 text-base outline-none focus:border-primary"
                 value={draft.sex}
-                onChange={event => updateDraft({ sex: event.target.value as Sex })}
+                onChange={event => updateDraft({ sex: event.target.value })}
               >
                 <option value="female">Female</option>
                 <option value="male">Male</option>
@@ -203,7 +203,7 @@ export default function OnboardingFlow() {
               <select
                 className="w-full border bg-transparent px-3 py-2 text-base outline-none focus:border-primary"
                 value={draft.datingPreferences.genderPreference}
-                onChange={event => updatePreferences({ genderPreference: event.target.value as GenderPreference })}
+                onChange={event => updatePreferences({ genderPreference: event.target.value })}
               >
                 <option value="all">All</option>
                 <option value="female">Female</option>
