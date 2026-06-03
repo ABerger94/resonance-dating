@@ -17,6 +17,23 @@
       },
       "description": "Public topic tags visible from the Void (never locked)"
     },
+    "location": {
+      "type": "string",
+      "description": "Coarse user location used for local Void and matchmaking filters"
+    },
+    "latitude": {
+      "type": "number",
+      "description": "Optional latitude for radius-based matching"
+    },
+    "longitude": {
+      "type": "number",
+      "description": "Optional longitude for radius-based matching"
+    },
+    "match_radius_miles": {
+      "type": "number",
+      "default": 50,
+      "description": "Maximum matchmaking and Void thread radius in miles"
+    },
     "is_mock": {
       "type": "boolean",
       "default": false,

@@ -16,6 +16,18 @@
     "resolveJsonModule": true,
     "types": []
   },
-  "include": ["src/components/**/*.js", "src/pages/**/*.jsx", "src/Layout.jsx"],
+  "include": [
+    "src/components/**/*.js",
+    "src/pages/**/*.jsx",
+    "src/Layout.jsx",
+    "src/types/**/*.ts",
+    "src/stores/**/*.ts",
+    "src/engine/**/*.ts",
+    "src/hooks/**/*.ts",
+    "src/providers/**/*.tsx",
+    "src/components/onboarding/**/*.tsx",
+    "src/pages/SettingsView.tsx",
+    "src/mock/**/*.ts"
+  ],
   "exclude": ["node_modules", "dist", "src/vite-plugins", "src/components/ui", "src/api", "src/lib"]
 } 

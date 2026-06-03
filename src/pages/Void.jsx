@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { MOCK_THREADS } from '@/lib/mockSeeder';
 import { getRandomPrompt } from '@/lib/promptEngine';
+import { isWithinMatchRadius } from '@/lib/location';
 import VoidBubble from '@/components/resonance/VoidBubble';
 import useResonanceStore from '@/lib/resonanceStore';
 import { useAuth } from '@/lib/AuthContext';
@@ -28,7 +29,7 @@ export default function Void() {
 
   useEffect(() => {
     loadVoidThreads();
-  }, [showMockData, activeUser?.id]);
+  }, [showMockData, activeUser?.id, currentProfile?.location, currentProfile?.match_radius_miles]);
 
   useEffect(() => {
     setSelectedPrompt(getRandomPrompt());
@@ -38,8 +39,14 @@ export default function Void() {
     setLoading(true);
     try {
       const real = await base44.entities.Thread.filter({ status: 'void' }, '-created_date', 30);
+      const profiles = await base44.entities.UserProfile.filter({}, '-updated_date', 200);
+      const profileByUserId = new Map(profiles.map(profile => [profile.user_id, profile]));
       const visibleReal = activeUser
-        ? real.filter(thread => thread.creator_id !== activeUser.id && thread.joiner_id !== activeUser.id)
+        ? real.filter(thread => {
+            if (thread.creator_id === activeUser.id || thread.joiner_id === activeUser.id) return false;
+            const creatorProfile = profileByUserId.get(thread.creator_id);
+            return isWithinMatchRadius(currentProfile, creatorProfile);
+          })
         : real;
       const mockData = showMockData ? MOCK_THREADS : [];
       setThreads([...visibleReal, ...mockData]);

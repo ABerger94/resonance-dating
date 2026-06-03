@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import useResonanceStore from '@/lib/resonanceStore';
+import { clampMatchRadiusMiles, resolveCoordinates, DEFAULT_MATCH_RADIUS_MILES } from '@/lib/location';
 import { User, RefreshCw, Upload, X } from 'lucide-react';
 
 const MAX_PROFILE_PHOTOS = 6;
@@ -27,6 +28,8 @@ export default function Profile() {
     interests: '',
     photo_url: '',
     photo_urls: [],
+    location: '',
+    match_radius_miles: DEFAULT_MATCH_RADIUS_MILES,
     tag_cloud: ''
   });
   const [saving, setSaving] = useState(false);
@@ -60,6 +63,8 @@ export default function Profile() {
           interests: Array.isArray(privateProfile?.interests) ? privateProfile.interests.join(', ') : (Array.isArray(p.interests) ? p.interests.join(', ') : ''),
           photo_url: photoUrls[0] || '',
           photo_urls: photoUrls,
+          location: p.location || '',
+          match_radius_miles: clampMatchRadiusMiles(p.match_radius_miles),
           tag_cloud: Array.isArray(p.tag_cloud) ? p.tag_cloud.join(', ') : (p.tag_cloud || '')
         });
       } else {
@@ -74,10 +79,15 @@ export default function Profile() {
   const handleSave = async () => {
     if (!currentUser) return;
     setSaving(true);
+    const coordinates = resolveCoordinates(form.location);
     const publicData = {
       user_id: currentUser.id,
       handle: form.handle,
       tag_cloud: form.tag_cloud.split(',').map(s => s.trim()).filter(Boolean),
+      location: form.location.trim(),
+      latitude: coordinates?.latitude,
+      longitude: coordinates?.longitude,
+      match_radius_miles: clampMatchRadiusMiles(form.match_radius_miles),
       is_mock: false
     };
     const privateData = {
@@ -158,6 +168,8 @@ export default function Profile() {
       </button>
     )},
     { key: 'display_name', label: 'REAL NAME', placeholder: 'Your actual name', hint: 'Unlocked to others at 25% resonance.', locked: true },
+    { key: 'location', label: 'AREA', placeholder: 'Brooklyn, NY or 40.6782,-73.9442', hint: 'Used to show local Void threads within your radius.' },
+    { key: 'match_radius_miles', label: 'MATCH RADIUS', placeholder: '50', hint: 'Maximum distance for Void threads and matches.', type: 'number' },
     { key: 'interests', label: 'INTERESTS', placeholder: 'philosophy, jazz, mycology...', hint: 'Comma-separated. Unlocked at 50% resonance.', locked: true },
     { key: 'bio', label: 'BIO', placeholder: 'Tell the truth about yourself...', hint: 'Unlocked at 75% resonance.', locked: true, multiline: true },
     { key: 'photo_urls', label: 'PHOTOS', hint: 'Upload up to 6 photos. Unlocked at 100% resonance - full resonance only.', locked: true, isPhoto: true },
@@ -274,9 +286,9 @@ export default function Profile() {
               />
             ) : (
               <input
-                type="text"
+                type={field.type || 'text'}
                 value={form[field.key]}
-                onChange={e => setForm(f => ({ ...f, [field.key]: e.target.value }))}
+                onChange={e => setForm(f => ({ ...f, [field.key]: field.type === 'number' ? e.target.valueAsNumber : e.target.value }))}
                 placeholder={field.placeholder}
                 className="w-full bg-transparent border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/30"
                 style={{ 

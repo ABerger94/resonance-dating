@@ -27,6 +27,10 @@ export const sanitizePublicProfile = (profile) => {
     user_id: profile.user_id,
     handle: profile.handle,
     tag_cloud: Array.isArray(profile.tag_cloud) ? profile.tag_cloud : [],
+    location: profile.location,
+    latitude: profile.latitude,
+    longitude: profile.longitude,
+    match_radius_miles: profile.match_radius_miles,
     is_mock: !!profile.is_mock,
     mock_id: profile.mock_id
   };
