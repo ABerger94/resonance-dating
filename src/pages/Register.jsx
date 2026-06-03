@@ -26,8 +26,16 @@ export default function Register() {
     }
     setLoading(true);
     try {
-      await base44.auth.register({ email, password });
-      // Auto-login after registration - no email verification required
+      // Register may fail to send email - that's ok, we catch it and proceed
+      try {
+        await base44.auth.register({ email, password });
+      } catch (regErr) {
+        // Ignore email sending errors - user can verify later in Settings
+        if (!regErr.message?.includes('email')) {
+          throw regErr;
+        }
+      }
+      // Auto-login after registration
       const loginResult = await base44.auth.loginViaEmailPassword(email, password);
       if (loginResult?.access_token) {
         base44.auth.setToken(loginResult.access_token);
