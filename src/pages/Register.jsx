@@ -29,7 +29,17 @@ export default function Register() {
     setLoading(true);
     try {
       await base44.auth.register({ email, password });
-      setShowOtp(true);
+      // Try to auto-login after registration
+      try {
+        const loginResult = await base44.auth.loginViaEmailPassword(email, password);
+        if (loginResult?.access_token) {
+          base44.auth.setToken(loginResult.access_token);
+        }
+        window.location.href = "/";
+      } catch (loginErr) {
+        // If login fails (e.g., verification required), show OTP screen
+        setShowOtp(true);
+      }
     } catch (err) {
       setError(err.message || "Registration failed");
     } finally {
