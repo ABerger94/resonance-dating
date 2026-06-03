@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { base44 } from '@/api/base44Client';
 import useResonanceStore from '@/lib/resonanceStore';
 import { clampMatchRadiusMiles, resolveCoordinates, DEFAULT_MATCH_RADIUS_MILES } from '@/lib/location';
-import { User, RefreshCw, Upload, X } from 'lucide-react';
+import { useAuth } from '@/lib/AuthContext';
+import { User, RefreshCw, Upload, X, LogOut } from 'lucide-react';
 
 const MAX_PROFILE_PHOTOS = 6;
 const MAX_PROFILE_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -21,6 +22,7 @@ function normalizePhotoUrls(profile) {
 
 export default function Profile() {
   const { currentUser, currentProfile, setCurrentProfile } = useResonanceStore();
+  const { logout } = useAuth();
   const [form, setForm] = useState({
     handle: '',
     display_name: '',
@@ -179,12 +181,22 @@ export default function Profile() {
   return (
     <div className="min-h-screen font-mono" style={{ background: 'hsl(var(--background))' }}>
       <div className="border-b px-6 py-4" style={{ borderColor: 'hsl(var(--border))' }}>
-        <div className="max-w-2xl mx-auto flex items-center gap-3">
-          <User size={14} className="text-primary" />
-          <span className="text-primary font-bold tracking-widest text-sm">YOUR PROFILE</span>
-          <span className="text-muted-foreground/50" style={{ fontSize: '10px' }}>
-            // LOCKED FIELDS VISIBLE ONLY TO YOU
-          </span>
+        <div className="max-w-2xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <User size={14} className="text-primary" />
+            <span className="text-primary font-bold tracking-widest text-sm">YOUR PROFILE</span>
+            <span className="text-muted-foreground/50" style={{ fontSize: '10px' }}>
+              // LOCKED FIELDS VISIBLE ONLY TO YOU
+            </span>
+          </div>
+          <button
+            onClick={() => logout(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 border text-xs tracking-widest transition-all hover:border-destructive/50 hover:text-destructive"
+            style={{ borderColor: 'hsl(var(--border))' }}
+          >
+            <LogOut size={12} />
+            LOG OUT
+          </button>
         </div>
       </div>
 

@@ -71,7 +71,8 @@ const AuthenticatedApp = () => {
         <Route path="/void" element={<Void />} />
         <Route path="/threads" element={<Threads />} />
         <Route path="/profile" element={<Profile />} />
-        {canUseAdminTools(user) && <Route path="/settings" element={<Settings />} />}
+        <Route path="/settings" element={<Profile />} />
+        {canUseAdminTools(user) && <Route path="/system" element={<Settings />} />}
       </Route>
       <Route path="/sandbox/:threadId" element={<Sandbox />} />
       <Route path="*" element={<PageNotFound />} />
