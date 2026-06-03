@@ -16,9 +16,9 @@ export default function VoidThreadCard({ thread, onJoin, style = {} }) {
       onMouseLeave={() => setHovered(false)}
       onClick={() => onJoin(thread)}
       style={{
-        borderColor: hovered ? 'rgba(0,255,136,0.3)' : 'hsl(var(--border))',
-        background: hovered ? 'rgba(0,255,136,0.03)' : 'hsl(var(--card))',
-        boxShadow: hovered ? '0 0 20px rgba(0,255,136,0.08), inset 0 0 20px rgba(0,255,136,0.02)' : 'none',
+        borderColor: hovered ? 'hsl(258 90% 70%)' : 'hsl(var(--border))',
+        background: hovered ? 'hsl(258 90% 98%)' : 'hsl(var(--card))',
+        boxShadow: hovered ? '0 4px 24px rgba(139,92,246,0.12)' : '0 1px 4px rgba(0,0,0,0.04)',
         ...style
       }}
     >
@@ -69,7 +69,7 @@ export default function VoidThreadCard({ thread, onJoin, style = {} }) {
         {/* Join CTA */}
         <div 
           className={`flex items-center justify-end gap-1 text-xs transition-opacity duration-200 ${hovered ? 'opacity-100' : 'opacity-0'}`}
-          style={{ color: '#00FF88' }}
+          style={{ color: 'hsl(258 90% 60%)' }}
         >
           <span className="tracking-widest">ENTER THREAD</span>
           <ArrowRight size={12} />

@@ -1,12 +1,13 @@
 import { Toaster } from "@/components/ui/toaster"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
+import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Layout from '@/components/Layout';
-import { ResonanceProvider } from '@/lib/resonanceStore';
+import useResonanceStore from '@/lib/resonanceStore';
 import Void from '@/pages/Void';
 import Sandbox from '@/pages/Sandbox';
 import Threads from '@/pages/Threads';
@@ -14,7 +15,13 @@ import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, navigateToLogin, user } = useAuth();
+  const setCurrentUser = useResonanceStore(s => s.setCurrentUser);
+
+  // Sync auth user into Zustand store
+  React.useEffect(() => {
+    if (user) setCurrentUser(user);
+  }, [user]);
 
   if (isLoadingPublicSettings || isLoadingAuth) {
     return (
@@ -57,12 +64,10 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <ResonanceProvider>
-          <Router>
-            <AuthenticatedApp />
-          </Router>
-          <Toaster />
-        </ResonanceProvider>
+        <Router>
+          <AuthenticatedApp />
+        </Router>
+        <Toaster />
       </QueryClientProvider>
     </AuthProvider>
   )

@@ -43,8 +43,8 @@ export default function Layout() {
                   style={{
                     fontSize: '10px',
                     letterSpacing: '2px',
-                    color: active ? '#00FF88' : '#444455',
-                    borderBottom: active ? '1px solid #00FF88' : '1px solid transparent',
+                    color: active ? 'hsl(258 90% 60%)' : 'hsl(230 15% 50%)',
+                    borderBottom: active ? '2px solid hsl(258 90% 60%)' : '2px solid transparent',
                     fontFamily: "'JetBrains Mono', monospace"
                   }}
                 >
@@ -56,7 +56,7 @@ export default function Layout() {
           </div>
 
           {/* Status indicator */}
-          <div className="flex items-center gap-1.5" style={{ fontSize: '9px', color: '#333344' }}>
+          <div className="flex items-center gap-1.5" style={{ fontSize: '9px', color: 'hsl(230 15% 60%)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
             <span className="hidden sm:block tracking-widest">ONLINE</span>
           </div>

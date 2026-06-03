@@ -63,8 +63,8 @@ export default function ResonanceMeter({ score = 0, className = '' }) {
         <span 
           className="text-2xl font-bold tabular-nums"
           style={{ 
-            color: state === 'resonating' ? '#00FF88' : 
-                   state === 'discovering' ? '#FFB300' : '#666677',
+            color: state === 'resonating' ? 'hsl(258 90% 60%)' : 
+                   state === 'discovering' ? 'hsl(320 85% 60%)' : 'hsl(230 15% 55%)',
             fontFamily: "'JetBrains Mono', monospace"
           }}
         >
@@ -83,8 +83,8 @@ export default function ResonanceMeter({ score = 0, className = '' }) {
           }}
         >
           <span style={{ 
-            color: state === 'resonating' ? '#00FF88' : 
-                   state === 'discovering' ? '#FFB300' : '#555566' 
+            color: state === 'resonating' ? 'hsl(258 90% 60%)' : 
+                   state === 'discovering' ? 'hsl(320 85% 60%)' : 'hsl(230 15% 55%)' 
           }}>
             {'█'.repeat(filled)}
           </span>
@@ -105,20 +105,20 @@ export default function ResonanceMeter({ score = 0, className = '' }) {
         {thresholds.map(t => (
           <div key={t.label} className="flex items-center gap-2">
             <span style={{ 
-              color: t.reached ? '#00FF88' : '#333344',
+              color: t.reached ? 'hsl(258 90% 60%)' : 'hsl(230 20% 80%)',
               fontSize: '10px'
             }}>
               {t.reached ? '▶' : '○'}
             </span>
             <span style={{ 
               fontSize: '10px',
-              color: t.reached ? (state === 'resonating' && t.label === 'PHOTO' ? '#00FF88' : '#e5e5e5') : '#333344',
+              color: t.reached ? 'hsl(230 25% 15%)' : 'hsl(230 15% 70%)',
               fontFamily: "'JetBrains Mono', monospace"
             }}>
               [{String(t.score).padStart(3, '0')}%] {t.label}
             </span>
             {t.reached && (
-              <span style={{ color: '#00FF88', fontSize: '9px' }}>✓ UNLOCKED</span>
+              <span style={{ color: 'hsl(258 90% 60%)', fontSize: '9px' }}>✓ UNLOCKED</span>
             )}
           </div>
         ))}

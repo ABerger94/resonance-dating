@@ -124,7 +124,7 @@ export function getStateColor(state) {
 }
 
 export function getScoreColor(score) {
-  if (score >= 60) return '#00FF88';
-  if (score >= 25) return '#FFB300';
-  return '#666677';
+  if (score >= 60) return 'hsl(258 90% 60%)';
+  if (score >= 25) return 'hsl(320 85% 60%)';
+  return 'hsl(230 15% 55%)';
 }

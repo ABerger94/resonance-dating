@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { MOCK_THREADS } from '@/lib/mockSeeder';
-import { getRandomPrompt, PROMPTS } from '@/lib/promptEngine';
+import { getRandomPrompt } from '@/lib/promptEngine';
 import VoidThreadCard from '@/components/resonance/VoidThreadCard';
 import useResonanceStore from '@/lib/resonanceStore';
-import { Radio, Plus, X, ChevronDown } from 'lucide-react';
+import { Radio, Plus, X } from 'lucide-react';
 
 export default function Void() {
   const navigate = useNavigate();
