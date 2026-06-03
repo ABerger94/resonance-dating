@@ -22,7 +22,7 @@ import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 
 const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, user } = useAuth();
+  const { isLoadingAuth, isLoadingPublicSettings, authError, user, isAuthenticated } = useAuth();
   const setCurrentUser = useResonanceStore(s => s.setCurrentUser);
 
   // Sync auth user into Zustand store
@@ -49,7 +49,7 @@ const AuthenticatedApp = () => {
     }
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return (
       <Routes>
         <Route path="/login" element={<Login />} />

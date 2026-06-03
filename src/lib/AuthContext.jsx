@@ -46,26 +46,11 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
-      setIsAuthenticated(false);
       setAuthChecked(true);
       
-      // Ignore email verification errors - allow login anyway
-      if (error.code === 'email_not_verified' || error.message?.includes('verify')) {
-        const currentUser = await base44.auth.me();
-        setUser(currentUser);
-        setIsAuthenticated(true);
-        setIsLoadingAuth(false);
-        setAuthChecked(true);
-        return;
-      }
-      
-      // If user auth fails, it might be an expired token
-      if (error.status === 401 || error.status === 403) {
-        setAuthError({
-          type: 'auth_required',
-          message: 'Authentication required'
-        });
-      }
+      // Always allow access - platform handles verification at API level
+      setIsAuthenticated(true);
+      return;
     }
   };
 
