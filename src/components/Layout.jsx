@@ -1,5 +1,6 @@
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Radio, MessageSquare, User, Settings, Zap } from 'lucide-react';
+import { Radio, MessageSquare, User, Settings } from 'lucide-react';
+import ResonanceLogo from '@/components/ResonanceLogo';
 
 const NAV_ITEMS = [
   { to: '/void', label: 'VOID', icon: Radio },
@@ -21,9 +22,7 @@ export default function Layout() {
           style={{ borderColor: 'hsl(var(--border))' }}
         >
           <div className="flex items-center gap-2">
-            <Zap size={14} className="text-primary" />
-            <span className="font-bold tracking-widest text-sm text-primary">RESONANCE</span>
-            <span className="text-muted-foreground/30" style={{ fontSize: '9px' }}>v0.1.0-mvp</span>
+            <ResonanceLogo size={28} />
           </div>
           <div className="flex items-center gap-1.5" style={{ fontSize: '9px', color: 'hsl(230 15% 60%)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
