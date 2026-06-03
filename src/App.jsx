@@ -15,6 +15,7 @@ import Sandbox from '@/pages/Sandbox';
 import Threads from '@/pages/Threads';
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
+import UserSettings from '@/pages/UserSettings';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
@@ -71,7 +72,7 @@ const AuthenticatedApp = () => {
         <Route path="/void" element={<Void />} />
         <Route path="/threads" element={<Threads />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Profile />} />
+        <Route path="/settings" element={<UserSettings />} />
         {canUseAdminTools(user) && <Route path="/system" element={<Settings />} />}
       </Route>
       <Route path="/sandbox/:threadId" element={<Sandbox />} />
