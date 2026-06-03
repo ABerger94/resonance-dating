@@ -140,9 +140,20 @@
 }
 
 .auth-inverted {
+  --background: 199 89% 48%;
+  --foreground: 0 0% 100%;
+  --card: 199 89% 42%;
+  --card-foreground: 0 0% 100%;
+  --popover: 199 89% 42%;
+  --popover-foreground: 0 0% 100%;
   --primary: 215 20% 52%;
   --primary-foreground: 0 0% 100%;
-  --muted-foreground: 199 89% 48%;
+  --secondary: 199 60% 40%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 199 60% 40%;
+  --muted-foreground: 215 20% 82%;
+  --border: 215 20% 70%;
+  --input: 199 60% 38%;
   --ring: 215 20% 52%;
 }
 
