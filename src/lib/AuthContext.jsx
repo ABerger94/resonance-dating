@@ -47,9 +47,8 @@ export const AuthProvider = ({ children }) => {
       console.error('User auth check failed:', error);
       setIsLoadingAuth(false);
       setAuthChecked(true);
-      
-      // Always allow access - platform handles verification at API level
-      setIsAuthenticated(true);
+      setIsAuthenticated(false);
+      setUser(null);
       return;
     }
   };
