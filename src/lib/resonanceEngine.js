@@ -32,7 +32,7 @@ export function analyzeMessage(content) {
 export function calculateResonanceScore(interactions, threadCreatedAt) {
   if (!interactions || interactions.length === 0) return 0;
 
-  // --- 40% PROMPT COMPLETION ---
+  // --- 40% PROMPT PARTICIPATION ---
   const senderIds = [...new Set(interactions.map(i => i.sender_id))];
   const promptCompletionScore = (() => {
     if (senderIds.length < 2) return 0;

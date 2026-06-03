@@ -18,9 +18,6 @@ export default function MessageBubble({ message, isOwn }) {
           {isOwn ? 'YOU' : (message.sender_handle || 'SIGNAL_??')}
         </span>
         <span className="text-muted-foreground/40">{time}</span>
-        {message.prompt_completed && (
-          <span className="text-primary/60">[PROMPT COMPLETE]</span>
-        )}
       </div>
 
       {/* Content */}

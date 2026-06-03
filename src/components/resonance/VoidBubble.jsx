@@ -20,6 +20,7 @@ export default function VoidBubble({ thread, index, onJoin, containerWidth, cont
   const velRef = useRef(null);
   const rafRef = useRef(null);
   const nodeRef = useRef(null);
+  const lastTouchActivateRef = useRef(0);
 
   // Bubble size based on text length
   const textLen = (thread.prompt_text || '').length;
@@ -80,10 +81,33 @@ export default function VoidBubble({ thread, index, onJoin, containerWidth, cont
     ? thread.prompt_text.slice(0, 77) + '...'
     : thread.prompt_text;
 
+  const activate = () => onJoin(thread);
+
+  const handleClick = () => {
+    if (Date.now() - lastTouchActivateRef.current < 500) return;
+    activate();
+  };
+
+  const handlePointerUp = (event) => {
+    if (event.pointerType === 'mouse') return;
+    lastTouchActivateRef.current = Date.now();
+    activate();
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    activate();
+  };
+
   return (
     <div
       ref={nodeRef}
-      onClick={() => onJoin(thread)}
+      role="button"
+      tabIndex={0}
+      onClick={handleClick}
+      onPointerUp={handlePointerUp}
+      onKeyDown={handleKeyDown}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="absolute cursor-pointer select-none font-mono"

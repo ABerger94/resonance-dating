@@ -50,7 +50,8 @@ export default function Settings() {
             display_name: p.display_name,
             bio: p.bio,
             interests: p.interests,
-            photo_url: p.photo_url
+            photo_url: p.photo_url,
+            photo_urls: p.photo_url ? [p.photo_url] : []
           });
           appendLog(`Seeded profile: ${p.handle}`, 'success');
         } catch (e) {

@@ -3,12 +3,19 @@ import { base44 } from '@/api/base44Client';
 import useResonanceStore from '@/lib/resonanceStore';
 import { User, RefreshCw, Upload, X } from 'lucide-react';
 
+const MAX_PROFILE_PHOTOS = 6;
 const MAX_PROFILE_IMAGE_BYTES = 5 * 1024 * 1024;
 const ADJECTIVES = ['SIGNAL', 'VOID', 'ECHO', 'PHASE', 'NULL', 'STATIC', 'DEEP', 'CARRIER', 'QUANTA', 'FRINGE', 'CIPHER', 'FLUX'];
 const NUMBERS = () => Math.floor(Math.random() * 90) + 10;
 
 function generateHandle() {
   return `${ADJECTIVES[Math.floor(Math.random() * ADJECTIVES.length)]}_${NUMBERS()}`;
+}
+
+function normalizePhotoUrls(profile) {
+  const urls = Array.isArray(profile?.photo_urls) ? profile.photo_urls : [];
+  if (profile?.photo_url) urls.unshift(profile.photo_url);
+  return Array.from(new Set(urls.filter(Boolean))).slice(0, MAX_PROFILE_PHOTOS);
 }
 
 export default function Profile() {
@@ -19,6 +26,7 @@ export default function Profile() {
     bio: '',
     interests: '',
     photo_url: '',
+    photo_urls: [],
     tag_cloud: ''
   });
   const [saving, setSaving] = useState(false);
@@ -44,12 +52,14 @@ export default function Profile() {
         const p = profiles[0];
         setProfileId(p.id);
         setCurrentProfile(p);
+        const photoUrls = normalizePhotoUrls(privateProfile || p);
         setForm({
           handle: p.handle || '',
           display_name: privateProfile?.display_name || p.display_name || '',
           bio: privateProfile?.bio || p.bio || '',
           interests: Array.isArray(privateProfile?.interests) ? privateProfile.interests.join(', ') : (Array.isArray(p.interests) ? p.interests.join(', ') : ''),
-          photo_url: privateProfile?.photo_url || p.photo_url || '',
+          photo_url: photoUrls[0] || '',
+          photo_urls: photoUrls,
           tag_cloud: Array.isArray(p.tag_cloud) ? p.tag_cloud.join(', ') : (p.tag_cloud || '')
         });
       } else {
@@ -75,7 +85,8 @@ export default function Profile() {
       display_name: form.display_name,
       bio: form.bio,
       interests: form.interests.split(',').map(s => s.trim()).filter(Boolean),
-      photo_url: form.photo_url
+      photo_url: form.photo_urls[0] || '',
+      photo_urls: form.photo_urls.slice(0, MAX_PROFILE_PHOTOS)
     };
     try {
       let profile;
@@ -102,20 +113,38 @@ export default function Profile() {
   };
 
   const handlePhotoUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) return;
-    if (file.size > MAX_PROFILE_IMAGE_BYTES) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+    const remainingSlots = MAX_PROFILE_PHOTOS - form.photo_urls.length;
+    if (remainingSlots <= 0) return;
+    const validFiles = files
+      .filter(file => file.type.startsWith('image/') && file.size <= MAX_PROFILE_IMAGE_BYTES)
+      .slice(0, remainingSlots);
+    if (validFiles.length === 0) return;
     setUploading(true);
     try {
-      const result = await base44.integrations.Core.UploadFile({ file });
-      setForm(f => ({ ...f, photo_url: result.file_url }));
+      const uploadedUrls = [];
+      for (const file of validFiles) {
+        const result = await base44.integrations.Core.UploadFile({ file });
+        if (result?.file_url) uploadedUrls.push(result.file_url);
+      }
+      setForm(f => {
+        const photoUrls = [...f.photo_urls, ...uploadedUrls].slice(0, MAX_PROFILE_PHOTOS);
+        return { ...f, photo_url: photoUrls[0] || '', photo_urls: photoUrls };
+      });
     } catch (err) {
       console.error(err);
     } finally {
       setUploading(false);
       e.target.value = '';
     }
+  };
+
+  const removePhoto = (index) => {
+    setForm(f => {
+      const photoUrls = f.photo_urls.filter((_, i) => i !== index);
+      return { ...f, photo_url: photoUrls[0] || '', photo_urls: photoUrls };
+    });
   };
 
   const fields = [
@@ -131,7 +160,7 @@ export default function Profile() {
     { key: 'display_name', label: 'REAL NAME', placeholder: 'Your actual name', hint: 'Unlocked to others at 25% resonance.', locked: true },
     { key: 'interests', label: 'INTERESTS', placeholder: 'philosophy, jazz, mycology...', hint: 'Comma-separated. Unlocked at 50% resonance.', locked: true },
     { key: 'bio', label: 'BIO', placeholder: 'Tell the truth about yourself...', hint: 'Unlocked at 75% resonance.', locked: true, multiline: true },
-    { key: 'photo_url', label: 'PHOTO', hint: 'Upload a photo. Unlocked at 100% resonance — full resonance only.', locked: true, isPhoto: true },
+    { key: 'photo_urls', label: 'PHOTOS', hint: 'Upload up to 6 photos. Unlocked at 100% resonance - full resonance only.', locked: true, isPhoto: true },
     { key: 'tag_cloud', label: 'SIGNAL TAGS', placeholder: 'tech, philosophy, music...', hint: 'Always visible in the Void. Shows your intellectual signature.' }
   ];
 
@@ -180,41 +209,55 @@ export default function Profile() {
             </div>
             {field.isPhoto ? (
               <div className="space-y-2">
-                {form.photo_url && (
-                  <div className="relative inline-block">
-                    <img
-                      src={form.photo_url}
-                      alt="Profile"
-                      className="w-20 h-20 object-cover border"
-                      style={{ borderColor: 'rgba(245,158,11,0.3)' }}
-                    />
-                    <button
-                      onClick={() => setForm(f => ({ ...f, photo_url: '' }))}
-                      className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center"
-                      style={{ background: '#ef4444' }}
-                    >
-                      <X size={8} color="white" />
-                    </button>
+                {form.photo_urls.length > 0 && (
+                  <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
+                    {form.photo_urls.map((photoUrl, index) => (
+                      <div key={photoUrl} className="relative">
+                        <img
+                          src={photoUrl}
+                          alt={`Profile ${index + 1}`}
+                          className="aspect-square w-full object-cover border"
+                          style={{ borderColor: index === 0 ? 'rgba(14,165,233,0.5)' : 'rgba(245,158,11,0.3)' }}
+                        />
+                        {index === 0 && (
+                          <span
+                            className="absolute bottom-1 left-1 px-1 py-0.5 tracking-widest"
+                            style={{ background: 'rgba(14,165,233,0.85)', color: 'white', fontSize: '8px' }}
+                          >
+                            MAIN
+                          </span>
+                        )}
+                        <button
+                          onClick={() => removePhoto(index)}
+                          className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full flex items-center justify-center"
+                          style={{ background: '#ef4444' }}
+                          title="Remove photo"
+                        >
+                          <X size={8} color="white" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 )}
                 <input
                   ref={photoInputRef}
                   type="file"
                   accept="image/jpeg,image/png,image/webp,image/gif"
+                  multiple
                   className="hidden"
                   onChange={handlePhotoUpload}
                 />
                 <button
                   onClick={() => photoInputRef.current?.click()}
-                  disabled={uploading}
+                  disabled={uploading || form.photo_urls.length >= MAX_PROFILE_PHOTOS}
                   className="flex items-center gap-2 px-3 py-2 border text-xs tracking-widest transition-all hover:border-amber-500/40 disabled:opacity-40"
                   style={{ borderColor: 'rgba(245,158,11,0.2)', color: '#F59E0B', fontFamily: "'JetBrains Mono', monospace" }}
                 >
                   <Upload size={10} />
-                  {uploading ? 'UPLOADING...' : form.photo_url ? 'REPLACE PHOTO' : 'UPLOAD PHOTO'}
+                  {uploading ? 'UPLOADING...' : form.photo_urls.length >= MAX_PROFILE_PHOTOS ? 'PHOTO LIMIT REACHED' : 'UPLOAD PHOTOS'}
                 </button>
                 <div className="text-muted-foreground/30" style={{ fontSize: '9px' }}>
-                  JPG, PNG, WEBP or GIF · No explicit content
+                  {form.photo_urls.length}/{MAX_PROFILE_PHOTOS} PHOTOS - JPG, PNG, WEBP or GIF - No explicit content
                 </div>
               </div>
             ) : field.multiline ? (

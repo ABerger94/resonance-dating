@@ -51,6 +51,10 @@ function UnlockedField({ label, icon: Icon, children, isNew, onAnimationDone }) 
 export default function DynamicProfile({ profile, score, threadId, previousScore = 0 }) {
   const unlocked = getUnlockedFields(score);
   const prevUnlocked = getUnlockedFields(previousScore);
+  const photoUrls = Array.from(new Set([
+    profile?.photo_url,
+    ...(Array.isArray(profile?.photo_urls) ? profile.photo_urls : [])
+  ].filter(Boolean))).slice(0, 6);
 
   const isNewUnlock = (field) => unlocked[field] && !prevUnlocked[field];
 
@@ -173,20 +177,39 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
           icon={ImageIcon}
           isNew={isNewUnlock('photo')}
         >
-          <div 
-            className="mt-1 overflow-hidden"
-            style={{ 
-              border: isNewUnlock('photo') ? '1px solid #0EA5E9' : '1px solid hsl(var(--border))',
-              boxShadow: isNewUnlock('photo') ? '0 0 20px rgba(14,165,233,0.3)' : 'none'
-            }}
-          >
-            <img 
-              src={profile.photo_url} 
-              alt={profile.display_name}
-              className="w-full h-32 object-cover"
-              style={{ filter: 'grayscale(20%) contrast(1.05)' }}
-            />
-          </div>
+          {photoUrls.length > 0 ? (
+            <div className="mt-1 space-y-2">
+              <div
+                className="overflow-hidden"
+                style={{
+                  border: isNewUnlock('photo') ? '1px solid #0EA5E9' : '1px solid hsl(var(--border))',
+                  boxShadow: isNewUnlock('photo') ? '0 0 20px rgba(14,165,233,0.3)' : 'none'
+                }}
+              >
+                <img
+                  src={photoUrls[0]}
+                  alt={profile.display_name || profile.handle || 'Profile'}
+                  className="w-full h-32 object-cover"
+                  style={{ filter: 'grayscale(20%) contrast(1.05)' }}
+                />
+              </div>
+              {photoUrls.length > 1 && (
+                <div className="grid grid-cols-5 gap-1">
+                  {photoUrls.slice(1).map((photoUrl, index) => (
+                    <img
+                      key={photoUrl}
+                      src={photoUrl}
+                      alt={`${profile.display_name || profile.handle || 'Profile'} ${index + 2}`}
+                      className="aspect-square w-full object-cover border"
+                      style={{ borderColor: 'hsl(var(--border))', filter: 'grayscale(20%) contrast(1.05)' }}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="text-muted-foreground/30 text-xs">No photos uploaded.</div>
+          )}
         </UnlockedField>
       ) : (
         <RedactedBlock label="VISUAL [100%]" icon={ImageIcon} />

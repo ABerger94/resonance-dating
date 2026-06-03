@@ -39,7 +39,11 @@ export const mergeUnlockedProfileFields = (publicProfile, privateProfile, unlock
   if (unlocked.name) profile.display_name = privateProfile.display_name;
   if (unlocked.interests) profile.interests = privateProfile.interests;
   if (unlocked.bio) profile.bio = privateProfile.bio;
-  if (unlocked.photo) profile.photo_url = privateProfile.photo_url;
+  if (unlocked.photo) {
+    const photoUrls = Array.isArray(privateProfile.photo_urls) ? privateProfile.photo_urls : [];
+    profile.photo_urls = Array.from(new Set([privateProfile.photo_url, ...photoUrls].filter(Boolean))).slice(0, 6);
+    profile.photo_url = profile.photo_urls[0] || '';
+  }
 
   return profile;
 };

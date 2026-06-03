@@ -23,7 +23,15 @@
     },
     "photo_url": {
       "type": "string",
-      "description": "Private profile photo URL"
+      "description": "Primary private profile photo URL"
+    },
+    "photo_urls": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 6,
+      "description": "Private profile photo URLs, capped at 6 total uploads"
     }
   },
   "required": [

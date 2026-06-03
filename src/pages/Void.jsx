@@ -28,7 +28,7 @@ export default function Void() {
 
   useEffect(() => {
     loadVoidThreads();
-  }, [showMockData]);
+  }, [showMockData, activeUser?.id]);
 
   useEffect(() => {
     setSelectedPrompt(getRandomPrompt());
@@ -38,8 +38,11 @@ export default function Void() {
     setLoading(true);
     try {
       const real = await base44.entities.Thread.filter({ status: 'void' }, '-created_date', 30);
+      const visibleReal = activeUser
+        ? real.filter(thread => thread.creator_id !== activeUser.id && thread.joiner_id !== activeUser.id)
+        : real;
       const mockData = showMockData ? MOCK_THREADS : [];
-      setThreads([...real, ...mockData]);
+      setThreads([...visibleReal, ...mockData]);
     } catch (e) {
       console.error(e);
       if (showMockData) setThreads(MOCK_THREADS);

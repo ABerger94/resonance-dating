@@ -31,11 +31,11 @@ export default function Sandbox() {
   const [previousScore, setPreviousScore] = useState(0);
   const [otherProfile, setOtherProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [promptCompleted, setPromptCompleted] = useState(false);
   const [displayScore, setDisplayScore] = useState(0);
   const [showMobileProfile, setShowMobileProfile] = useState(false);
   const messagesEndRef = useRef(null);
   const lastMessageTimeRef = useRef(null);
+  const lastBackTouchRef = useRef(0);
 
   useEffect(() => {
     loadThread();
@@ -139,7 +139,7 @@ export default function Sandbox() {
       word_count: analysis.wordCount,
       unique_word_ratio: analysis.uniqueWordRatio,
       sentiment_score: analysis.sentimentScore,
-      prompt_completed: promptCompleted,
+      prompt_completed: true,
       response_latency_ms: latency,
       created_date: new Date().toISOString(),
       is_mock: isMock
@@ -148,8 +148,6 @@ export default function Sandbox() {
     const updatedInteractions = [...interactions, newInteraction];
     setInteractions(updatedInteractions);
     setInputText('');
-    setPromptCompleted(false);
-
     // Recalculate score
     const newScore = calculateResonanceScore(updatedInteractions);
     const newState = getResonanceState(newScore);
@@ -168,7 +166,7 @@ export default function Sandbox() {
           word_count: analysis.wordCount,
           unique_word_ratio: analysis.uniqueWordRatio,
           sentiment_score: analysis.sentimentScore,
-          prompt_completed: promptCompleted,
+          prompt_completed: true,
           response_latency_ms: latency
         });
         await base44.entities.Thread.update(threadId, {
@@ -182,6 +180,19 @@ export default function Sandbox() {
     }
 
     setSending(false);
+  };
+
+  const goToVoid = () => navigate('/void');
+
+  const handleBackClick = () => {
+    if (Date.now() - lastBackTouchRef.current < 500) return;
+    goToVoid();
+  };
+
+  const handleBackPointerUp = (event) => {
+    if (event.pointerType === 'mouse') return;
+    lastBackTouchRef.current = Date.now();
+    goToVoid();
   };
 
   if (loading) {
@@ -200,8 +211,9 @@ export default function Sandbox() {
       <div className="flex-none border-b px-4 py-3 flex items-center justify-between" style={{ borderColor: 'hsl(var(--border))' }}>
         <div className="flex items-center gap-3">
           <button 
-            onClick={() => navigate('/void')}
-            className="flex items-center gap-1.5 text-muted-foreground/60 hover:text-foreground transition-colors"
+            onClick={handleBackClick}
+            onPointerUp={handleBackPointerUp}
+            className="flex items-center gap-1.5 px-3 py-2 -ml-3 text-muted-foreground/60 hover:text-foreground transition-colors"
             style={{ fontSize: '10px' }}
           >
             <ArrowLeft size={10} />
@@ -325,18 +337,6 @@ export default function Sandbox() {
 
           {/* Input */}
           <div className="flex-none border-t p-3 space-y-2" style={{ borderColor: 'hsl(var(--border))' }}>
-            {/* Prompt complete toggle */}
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setPromptCompleted(!promptCompleted)}
-                className="flex items-center gap-1.5 transition-colors"
-                style={{ fontSize: '9px', color: promptCompleted ? '#10B981' : 'hsl(215 20% 52%)' }}
-              >
-                <span>{promptCompleted ? '■' : '□'}</span>
-                <span className="tracking-widest">MARK AS PROMPT RESPONSE (+SCORE)</span>
-              </button>
-            </div>
-            
             <div className="flex gap-2">
               <div className="flex-1 relative">
                 <span 
