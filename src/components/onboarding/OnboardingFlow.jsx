@@ -5,6 +5,7 @@ import {
   createEmptyUserProfileDraft,
 } from '@/types/UserProfile';
 import { useUserStore, validateUserProfileDraft } from '@/stores/useUserStore';
+import useResonanceStore from '@/lib/resonanceStore';
 import { useNavigate } from 'react-router-dom';
 
 const steps = ['Identity', 'Location', 'Preferences'];
@@ -15,6 +16,7 @@ function numberFromInput(value) {
 
 export default function OnboardingFlow() {
   const createProfile = useUserStore(state => state.createProfile);
+  const setCurrentProfile = useResonanceStore(state => state.setCurrentProfile);
   const navigate = useNavigate();
   const [stepIndex, setStepIndex] = useState(0);
   const [draft, setDraft] = useState(createEmptyUserProfileDraft);
@@ -88,8 +90,9 @@ export default function OnboardingFlow() {
       
       await base44.entities.UserProfile.create(profileData);
       
-      // Also update local Zustand store
-      createProfile({ ...draft, status: 'active' });
+      // Update local Zustand stores
+      const profile = createProfile({ ...draft, status: 'active' });
+      setCurrentProfile(profile);
       
       // Navigate to the main app
       navigate('/void');
@@ -99,7 +102,7 @@ export default function OnboardingFlow() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [createProfile, draft, navigate]);
+  }, [createProfile, setCurrentProfile, draft, navigate]);
 
   return (
     <section className="mx-auto max-w-xl px-6 py-8 font-mono">

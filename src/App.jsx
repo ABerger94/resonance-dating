@@ -3,7 +3,7 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { ProfileProvider } from '@/providers/ProfileProvider';
+import { ProfileProvider, useProfileContext } from '@/providers/ProfileProvider';
 import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
@@ -25,14 +25,19 @@ import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, user, isAuthenticated } = useAuth();
   const setCurrentUser = useResonanceStore(s => s.setCurrentUser);
-  const profile = useResonanceStore(s => s.profile);
+  const setCurrentProfile = useResonanceStore(s => s.setCurrentProfile);
+  const { profile, isReady } = useProfileContext();
 
   // Sync auth user into Zustand store
   React.useEffect(() => {
-    if (user) setCurrentUser(user);
-  }, [user]);
+    if (user) {
+      setCurrentUser(user);
+      // Sync profile from ProfileProvider to resonance store
+      if (profile) setCurrentProfile(profile);
+    }
+  }, [user, profile]);
 
-  if (isLoadingPublicSettings || isLoadingAuth) {
+  if (isLoadingPublicSettings || isLoadingAuth || !isReady) {
     return (
       <div className="fixed inset-0 flex items-center justify-center font-mono">
         <div className="space-y-3 text-center">
@@ -63,8 +68,8 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Show onboarding if user doesn't have a profile yet
-  if (isAuthenticated && !profile) {
+  // Show onboarding if user doesn't have a profile yet (only after store has hydrated)
+  if (isAuthenticated && isReady && !profile) {
     return (
       <Routes>
         <Route path="/onboarding" element={<OnboardingFlow />} />
