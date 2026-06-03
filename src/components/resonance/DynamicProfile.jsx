@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { getUnlockedFields } from '@/lib/resonanceEngine';
 import GlitchText from './GlitchText';
-import { Lock, User, FileText, Tag, Image } from 'lucide-react';
+import { Lock, User, FileText, Tag, ImageIcon } from 'lucide-react';
 
 const REDACTED = '████████████████████';
 
@@ -170,7 +170,7 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
       {unlocked.photo ? (
         <UnlockedField 
           label="VISUAL" 
-          icon={Image}
+          icon={ImageIcon}
           isNew={isNewUnlock('photo')}
         >
           <div 
@@ -189,7 +189,7 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
           </div>
         </UnlockedField>
       ) : (
-        <RedactedBlock label="VISUAL [100%]" icon={Image} />
+        <RedactedBlock label="VISUAL [100%]" icon={ImageIcon} />
       )}
     </div>
   );

@@ -52,7 +52,7 @@ export default function Sandbox() {
     setLoading(true);
     if (isMock) {
       // Load mock thread
-      const { MOCK_THREADS } = await import('@/lib/mockSeeder');
+      const { MOCK_THREADS } = await import('../lib/mockSeeder');
       const mockThread = MOCK_THREADS.find(t => t.id === threadId) || MOCK_THREADS[0];
       setThread(mockThread);
 

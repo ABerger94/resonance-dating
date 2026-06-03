@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 import useResonanceStore from '@/lib/resonanceStore';
-import { User, Save, RefreshCw, Tag } from 'lucide-react';
+import { User, RefreshCw } from 'lucide-react';
 
 const ADJECTIVES = ['SIGNAL', 'VOID', 'ECHO', 'PHASE', 'NULL', 'STATIC', 'DEEP', 'CARRIER', 'QUANTA', 'FRINGE', 'CIPHER', 'FLUX'];
 const NUMBERS = () => Math.floor(Math.random() * 90) + 10;
