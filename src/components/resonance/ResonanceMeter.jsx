@@ -63,8 +63,8 @@ export default function ResonanceMeter({ score = 0, className = '' }) {
         <span 
           className="text-2xl font-bold tabular-nums"
           style={{ 
-            color: state === 'resonating' ? 'hsl(258 90% 60%)' : 
-                   state === 'discovering' ? 'hsl(320 85% 60%)' : 'hsl(230 15% 55%)',
+            color: state === 'resonating' ? '#0EA5E9' : 
+                   state === 'discovering' ? '#10B981' : 'hsl(215 20% 52%)',
             fontFamily: "'JetBrains Mono', monospace"
           }}
         >
@@ -83,8 +83,8 @@ export default function ResonanceMeter({ score = 0, className = '' }) {
           }}
         >
           <span style={{ 
-            color: state === 'resonating' ? 'hsl(258 90% 60%)' : 
-                   state === 'discovering' ? 'hsl(320 85% 60%)' : 'hsl(230 15% 55%)' 
+            color: state === 'resonating' ? '#0EA5E9' : 
+                   state === 'discovering' ? '#10B981' : 'hsl(215 20% 52%)' 
           }}>
             {'█'.repeat(filled)}
           </span>
@@ -105,20 +105,20 @@ export default function ResonanceMeter({ score = 0, className = '' }) {
         {thresholds.map(t => (
           <div key={t.label} className="flex items-center gap-2">
             <span style={{ 
-              color: t.reached ? 'hsl(258 90% 60%)' : 'hsl(230 20% 80%)',
+              color: t.reached ? '#0EA5E9' : 'hsl(215 20% 70%)',
               fontSize: '10px'
             }}>
               {t.reached ? '▶' : '○'}
             </span>
             <span style={{ 
               fontSize: '10px',
-              color: t.reached ? 'hsl(230 25% 15%)' : 'hsl(230 15% 70%)',
+              color: t.reached ? 'hsl(215 41% 18%)' : 'hsl(215 20% 60%)',
               fontFamily: "'JetBrains Mono', monospace"
             }}>
               [{String(t.score).padStart(3, '0')}%] {t.label}
             </span>
             {t.reached && (
-              <span style={{ color: 'hsl(258 90% 60%)', fontSize: '9px' }}>✓ UNLOCKED</span>
+              <span style={{ color: '#10B981', fontSize: '9px' }}>✓ UNLOCKED</span>
             )}
           </div>
         ))}

@@ -17,9 +17,9 @@ export default function ThreadCard({ thread, onClick, isActive = false }) {
   const empty = 10 - filled;
 
   const stateColors = {
-    locked: 'hsl(230 15% 60%)',
-    discovering: 'hsl(320 85% 60%)',
-    resonating: 'hsl(258 90% 60%)'
+    locked: 'hsl(215 20% 55%)',
+    discovering: '#10B981',
+    resonating: '#0EA5E9'
   };
 
   const lastActivity = thread.last_activity || thread.updated_date || thread.created_date;

@@ -45,9 +45,9 @@ export default function Threads() {
   };
 
   const stateColors = {
-    resonating: '#00FF88',
-    discovering: '#FFB300',
-    locked: '#555566'
+    resonating: '#0EA5E9',
+    discovering: '#10B981',
+    locked: 'hsl(215 20% 52%)'
   };
 
   return (

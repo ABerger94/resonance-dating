@@ -134,7 +134,7 @@ export default function Profile() {
               <div className="flex items-center gap-2">
                 <span 
                   className="tracking-widest" 
-                  style={{ fontSize: '9px', color: field.locked ? '#FFB300' : '#555566' }}
+                  style={{ fontSize: '9px', color: field.locked ? '#F59E0B' : 'hsl(215 20% 52%)' }}
                 >
                   {field.locked ? '🔒 ' : ''}{field.label}
                 </span>
@@ -152,7 +152,7 @@ export default function Profile() {
                 rows={4}
                 className="w-full bg-transparent border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/30 resize-none"
                 style={{ 
-                  borderColor: field.locked ? 'rgba(255,179,0,0.2)' : 'hsl(var(--border))',
+                  borderColor: field.locked ? 'rgba(245,158,11,0.2)' : 'hsl(var(--border))',
                   fontFamily: "'JetBrains Mono', monospace"
                 }}
               />
@@ -164,7 +164,7 @@ export default function Profile() {
                 placeholder={field.placeholder}
                 className="w-full bg-transparent border px-3 py-2 text-xs text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-primary/30"
                 style={{ 
-                  borderColor: field.locked ? 'rgba(255,179,0,0.2)' : 'hsl(var(--border))',
+                  borderColor: field.locked ? 'rgba(245,158,11,0.2)' : 'hsl(var(--border))',
                   fontFamily: "'JetBrains Mono', monospace"
                 }}
               />

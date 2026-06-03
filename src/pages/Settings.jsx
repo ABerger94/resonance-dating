@@ -95,7 +95,7 @@ export default function Settings() {
     }
   };
 
-  const logColors = { info: '#555566', success: '#00FF88', warn: '#FFB300', error: '#ff4444' };
+  const logColors = { info: 'hsl(215 20% 52%)', success: '#10B981', warn: '#F59E0B', error: '#ef4444' };
 
   return (
     <div className="min-h-screen font-mono" style={{ background: 'hsl(var(--background))' }}>
@@ -116,7 +116,7 @@ export default function Settings() {
 
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <div className="text-xs" style={{ color: seederEnabled ? '#00FF88' : '#555566' }}>
+              <div className="text-xs" style={{ color: seederEnabled ? '#10B981' : 'hsl(215 20% 52%)' }}>
                 STATUS: {seederEnabled ? 'ENABLED' : 'DISABLED'}
               </div>
               <div className="text-muted-foreground/40" style={{ fontSize: '10px' }}>
@@ -127,9 +127,9 @@ export default function Settings() {
               onClick={handleToggleSeeder}
               className="px-4 py-2 border text-xs tracking-widest transition-all hover:opacity-80"
               style={{
-                borderColor: seederEnabled ? '#00FF88' : 'hsl(var(--border))',
-                color: seederEnabled ? '#00FF88' : '#555566',
-                background: seederEnabled ? 'rgba(0,255,136,0.08)' : 'transparent'
+                borderColor: seederEnabled ? '#10B981' : 'hsl(var(--border))',
+                color: seederEnabled ? '#10B981' : 'hsl(215 20% 52%)',
+                background: seederEnabled ? 'rgba(16,185,129,0.08)' : 'transparent'
               }}
             >
               {seederEnabled ? <><Square size={10} className="inline mr-1" />DISABLE</> : <><Play size={10} className="inline mr-1" />ENABLE</>}
@@ -168,14 +168,14 @@ export default function Settings() {
         </div>
 
         {/* Dev mode toggle */}
-        <div className="border p-4 space-y-4" style={{ borderColor: seederEnabled ? 'rgba(255,179,0,0.2)' : 'hsl(var(--border))' }}>
+        <div className="border p-4 space-y-4" style={{ borderColor: devMode ? 'rgba(245,158,11,0.2)' : 'hsl(var(--border))' }}>
           <div className="flex items-center gap-2 text-xs tracking-widest">
             <span className="text-muted-foreground/60">◈</span>
             <span className="text-foreground/80">DEV TOOLBAR</span>
           </div>
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <div className="text-xs" style={{ color: devMode ? '#FFB300' : '#555566' }}>
+              <div className="text-xs" style={{ color: devMode ? '#F59E0B' : 'hsl(215 20% 52%)' }}>
                 STATUS: {devMode ? 'ACTIVE' : 'INACTIVE'}
               </div>
               <div className="text-muted-foreground/40" style={{ fontSize: '10px' }}>
@@ -186,9 +186,9 @@ export default function Settings() {
               onClick={() => setDevMode(!devMode)}
               className="px-4 py-2 border text-xs tracking-widest transition-all hover:opacity-80"
               style={{
-                borderColor: devMode ? '#FFB300' : 'hsl(var(--border))',
-                color: devMode ? '#FFB300' : '#555566',
-                background: devMode ? 'rgba(255,179,0,0.06)' : 'transparent'
+                borderColor: devMode ? '#F59E0B' : 'hsl(var(--border))',
+                color: devMode ? '#F59E0B' : 'hsl(215 20% 52%)',
+                background: devMode ? 'rgba(245,158,11,0.06)' : 'transparent'
               }}
             >
               {devMode ? 'DEACTIVATE' : 'ACTIVATE'}

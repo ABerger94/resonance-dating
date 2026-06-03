@@ -196,7 +196,7 @@ export default function Sandbox() {
         <div 
           className="text-xs tracking-widest"
           style={{ 
-            color: effectiveScore >= 60 ? '#00FF88' : effectiveScore >= 25 ? '#FFB300' : '#555566',
+            color: effectiveScore >= 60 ? '#0EA5E9' : effectiveScore >= 25 ? '#10B981' : 'hsl(215 20% 52%)',
             fontSize: '10px'
           }}
         >
@@ -211,12 +211,12 @@ export default function Sandbox() {
         onClick={() => setShowMobileProfile(!showMobileProfile)}
       >
         <div className="flex items-center gap-2">
-          <span style={{ fontSize: '9px', color: 'hsl(230 15% 55%)', letterSpacing: '2px' }}>RESONANCE</span>
+          <span style={{ fontSize: '9px', color: 'hsl(215 20% 52%)', letterSpacing: '2px' }}>RESONANCE</span>
           <span
             className="font-bold tabular-nums"
             style={{
               fontSize: '12px',
-              color: effectiveScore >= 60 ? 'hsl(258 90% 60%)' : effectiveScore >= 25 ? 'hsl(320 85% 60%)' : 'hsl(230 15% 55%)',
+              color: effectiveScore >= 60 ? '#0EA5E9' : effectiveScore >= 25 ? '#10B981' : 'hsl(215 20% 52%)',
               fontFamily: "'JetBrains Mono', monospace"
             }}
           >
@@ -230,7 +230,7 @@ export default function Sandbox() {
                 className="w-1.5 h-3 rounded-sm"
                 style={{
                   background: i < Math.round(effectiveScore / 10)
-                    ? effectiveScore >= 60 ? 'hsl(258 90% 60%)' : effectiveScore >= 25 ? 'hsl(320 85% 60%)' : 'hsl(230 15% 55%)'
+                    ? effectiveScore >= 60 ? '#0EA5E9' : effectiveScore >= 25 ? '#10B981' : 'hsl(215 20% 52%)'
                     : 'hsl(var(--border))'
                 }}
               />
@@ -238,7 +238,7 @@ export default function Sandbox() {
           </div>
         </div>
         <div className="flex items-center gap-1.5">
-          <span style={{ fontSize: '9px', color: 'hsl(230 15% 55%)', letterSpacing: '1px' }}>SIGNAL PROFILE</span>
+          <span style={{ fontSize: '9px', color: 'hsl(215 20% 52%)', letterSpacing: '1px' }}>SIGNAL PROFILE</span>
           <ChevronDown
             size={12}
             className="text-muted-foreground transition-transform"
@@ -270,7 +270,7 @@ export default function Sandbox() {
           {thread?.prompt_text && (
             <div 
               className="flex-none border-b px-4 py-3"
-              style={{ borderColor: 'hsl(var(--border))', background: 'rgba(0,255,136,0.02)' }}
+              style={{ borderColor: 'hsl(var(--border))', background: 'rgba(14,165,233,0.03)' }}
             >
               <div className="flex items-start gap-2">
                 <ChevronRight size={10} className="text-primary/60 mt-0.5 flex-none" />
@@ -310,7 +310,7 @@ export default function Sandbox() {
               <button
                 onClick={() => setPromptCompleted(!promptCompleted)}
                 className="flex items-center gap-1.5 transition-colors"
-                style={{ fontSize: '9px', color: promptCompleted ? '#00FF88' : '#444455' }}
+                style={{ fontSize: '9px', color: promptCompleted ? '#10B981' : 'hsl(215 20% 52%)' }}
               >
                 <span>{promptCompleted ? '■' : '□'}</span>
                 <span className="tracking-widest">MARK AS PROMPT RESPONSE (+SCORE)</span>
@@ -347,7 +347,7 @@ export default function Sandbox() {
                 className="px-3 border transition-all disabled:opacity-30 hover:border-primary/50 hover:text-primary"
                 style={{ 
                   borderColor: 'hsl(var(--border))',
-                  color: '#555566'
+                  color: 'hsl(215 20% 52%)'
                 }}
               >
                 <Send size={12} />
