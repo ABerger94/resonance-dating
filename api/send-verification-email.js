@@ -2,6 +2,14 @@ import { createClient } from '@base44/sdk';
 
 const RESEND_API_URL = 'https://api.resend.com/emails';
 
+function errorDetails(error) {
+  return error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    (typeof error?.response?.data === 'string' ? error.response.data : '') ||
+    error?.message ||
+    'Unknown error';
+}
+
 function json(response, statusCode, body) {
   response.statusCode = statusCode;
   response.setHeader('Content-Type', 'application/json');
@@ -53,7 +61,7 @@ export default async function handler(request, response) {
       if (!process.env.RESEND_API_KEY) {
         json(response, 502, {
           error: 'Base44 email failed and no fallback email provider is configured.',
-          details: error.message,
+          details: errorDetails(error),
         });
         return;
       }

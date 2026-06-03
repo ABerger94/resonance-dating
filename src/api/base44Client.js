@@ -30,7 +30,7 @@ async function sendVerificationEmail(email, code) {
     let message = 'Could not send verification code.';
     try {
       const body = await response.json();
-      message = body.error || message;
+      message = body.details ? `${body.error || message} ${body.details}` : (body.error || message);
     } catch {
       // Keep the default message.
     }
