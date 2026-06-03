@@ -29,6 +29,8 @@ export default function Register() {
     setLoading(true);
     try {
       await base44.auth.register({ email, password });
+      // Fire-and-forget nudge email to help users find the OTP (checks spam etc.)
+      base44.functions.invoke('resendVerificationEmail', { email }).catch(() => {});
       setShowOtp(true);
     } catch (err) {
       setError(err.message || "Registration failed");
