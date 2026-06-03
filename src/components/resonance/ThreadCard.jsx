@@ -31,7 +31,7 @@ export default function ThreadCard({ thread, onClick, isActive = false }) {
       style={{
         borderColor: isActive ? 'hsl(var(--primary) / 0.5)' : 'hsl(var(--border))',
         background: isActive ? 'hsl(var(--primary) / 0.04)' : 'transparent',
-        boxShadow: isActive ? '0 0 12px rgba(0,255,136,0.08)' : 'none'
+        boxShadow: isActive ? '0 0 12px rgba(14,165,233,0.08)' : 'none'
       }}
     >
       <div className="font-mono space-y-2">

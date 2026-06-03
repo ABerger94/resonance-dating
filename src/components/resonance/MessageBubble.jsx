@@ -13,7 +13,7 @@ export default function MessageBubble({ message, isOwn }) {
       <div className="flex items-center gap-2" style={{ fontSize: '9px' }}>
         <span 
           className="tracking-widest"
-          style={{ color: isOwn ? '#00FF88' : '#FFB300' }}
+          style={{ color: isOwn ? '#10B981' : '#F59E0B' }}
         >
           {isOwn ? 'YOU' : (message.sender_handle || 'SIGNAL_??')}
         </span>
@@ -27,14 +27,14 @@ export default function MessageBubble({ message, isOwn }) {
       <div
         className="max-w-lg text-sm leading-relaxed p-3 font-mono"
         style={{
-          background: isOwn ? 'rgba(0,255,136,0.04)' : 'hsl(var(--card))',
-          border: `1px solid ${isOwn ? 'rgba(0,255,136,0.2)' : 'hsl(var(--border))'}`,
-          borderLeft: isOwn ? '1px solid rgba(0,255,136,0.2)' : '2px solid rgba(255,179,0,0.3)',
+          background: isOwn ? 'rgba(16,185,129,0.04)' : 'hsl(var(--card))',
+          border: `1px solid ${isOwn ? 'rgba(16,185,129,0.2)' : 'hsl(var(--border))'}`,
+          borderLeft: isOwn ? '1px solid rgba(16,185,129,0.2)' : '2px solid rgba(245,158,11,0.3)',
           color: 'hsl(var(--foreground))',
           fontFamily: "'JetBrains Mono', monospace"
         }}
       >
-        {!isOwn && <span style={{ color: '#FFB300' }} className="mr-1">&gt;</span>}
+        {!isOwn && <span style={{ color: '#F59E0B' }} className="mr-1">&gt;</span>}
         {message.content}
       </div>
 
@@ -45,7 +45,7 @@ export default function MessageBubble({ message, isOwn }) {
           <span>UWR:{Math.round(message.unique_word_ratio * 100)}%</span>
         )}
         {message.sentiment_score !== undefined && message.sentiment_score !== 0 && (
-          <span style={{ color: message.sentiment_score > 0 ? '#00FF88' : '#ff4444' }}>
+          <span style={{ color: message.sentiment_score > 0 ? '#10B981' : 'hsl(var(--destructive))' }}>
             SENT:{message.sentiment_score > 0 ? '+' : ''}{message.sentiment_score.toFixed(2)}
           </span>
         )}

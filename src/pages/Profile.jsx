@@ -136,7 +136,7 @@ export default function Profile() {
         {/* Lock legend */}
         <div 
           className="border p-3 text-xs space-y-1"
-          style={{ borderColor: 'hsl(var(--border))', background: 'rgba(255,179,0,0.03)' }}
+          style={{ borderColor: 'hsl(var(--border))', background: 'rgba(245,158,11,0.03)' }}
         >
           <div className="flex items-center gap-2 text-accent/70 tracking-widest" style={{ fontSize: '9px' }}>
             <span>⚠</span>
@@ -235,9 +235,9 @@ export default function Profile() {
           disabled={saving}
           className="w-full py-2.5 text-xs tracking-widest font-bold transition-all border disabled:opacity-50"
           style={{
-            background: saved ? 'rgba(0,255,136,0.1)' : 'transparent',
-            borderColor: saved ? '#00FF88' : 'rgba(0,255,136,0.3)',
-            color: saved ? '#00FF88' : '#00FF88'
+            background: saved ? 'rgba(16,185,129,0.1)' : 'transparent',
+            borderColor: saved ? '#10B981' : 'rgba(16,185,129,0.3)',
+            color: '#10B981'
           }}
         >
           {saving ? 'SAVING...' : saved ? '✓ PROFILE SAVED' : '↳ SAVE PROFILE'}

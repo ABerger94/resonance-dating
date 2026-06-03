@@ -36,7 +36,7 @@ function UnlockedField({ label, icon: Icon, children, isNew, onAnimationDone }) 
   return (
     <div 
       className={`space-y-1 transition-all duration-500 ${isNew ? 'border border-primary/30 p-2 rounded' : ''}`}
-      style={isNew ? { boxShadow: '0 0 8px rgba(0,255,136,0.15)' } : {}}
+      style={isNew ? { boxShadow: '0 0 8px rgba(14,165,233,0.15)' } : {}}
     >
       <div className="flex items-center gap-1.5 text-primary/70" style={{ fontSize: '9px' }}>
         <Icon size={10} />
@@ -90,7 +90,7 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
                 className="px-1.5 py-0.5 text-xs border"
                 style={{ 
                   borderColor: 'hsl(var(--border))', 
-                  color: '#666677',
+                  color: 'hsl(215 20% 45%)',
                   fontSize: '10px'
                 }}
               >
@@ -151,7 +151,7 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
                 key={interest}
                 className="px-1.5 py-0.5 text-xs border border-primary/30"
                 style={{ 
-                  color: '#00FF88', 
+                  color: '#10B981', 
                   fontSize: '10px',
                   opacity: isNewUnlock('interests') ? 1 : 1,
                   animationDelay: `${i * 100}ms`
@@ -176,8 +176,8 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
           <div 
             className="mt-1 overflow-hidden"
             style={{ 
-              border: isNewUnlock('photo') ? '1px solid #00FF88' : '1px solid hsl(var(--border))',
-              boxShadow: isNewUnlock('photo') ? '0 0 20px rgba(0,255,136,0.3)' : 'none'
+              border: isNewUnlock('photo') ? '1px solid #0EA5E9' : '1px solid hsl(var(--border))',
+              boxShadow: isNewUnlock('photo') ? '0 0 20px rgba(14,165,233,0.3)' : 'none'
             }}
           >
             <img 

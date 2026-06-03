@@ -16,9 +16,9 @@ export default function VoidThreadCard({ thread, onJoin, style = {} }) {
       onMouseLeave={() => setHovered(false)}
       onClick={() => onJoin(thread)}
       style={{
-        borderColor: hovered ? 'hsl(258 90% 70%)' : 'hsl(var(--border))',
-        background: hovered ? 'hsl(258 90% 98%)' : 'hsl(var(--card))',
-        boxShadow: hovered ? '0 4px 24px rgba(139,92,246,0.12)' : '0 1px 4px rgba(0,0,0,0.04)',
+        borderColor: hovered ? 'rgba(14,165,233,0.5)' : 'hsl(var(--border))',
+        background: hovered ? 'rgba(14,165,233,0.03)' : 'hsl(var(--card))',
+        boxShadow: hovered ? '0 4px 24px rgba(14,165,233,0.1)' : '0 1px 4px rgba(0,0,0,0.04)',
         ...style
       }}
     >
@@ -55,8 +55,8 @@ export default function VoidThreadCard({ thread, onJoin, style = {} }) {
                 className="px-1.5 py-0.5"
                 style={{ 
                   fontSize: '9px',
-                  color: '#444455',
-                  border: '1px solid #222233',
+                  color: 'hsl(215 20% 45%)',
+                  border: '1px solid hsl(var(--border))',
                   fontFamily: "'JetBrains Mono', monospace"
                 }}
               >
@@ -69,7 +69,7 @@ export default function VoidThreadCard({ thread, onJoin, style = {} }) {
         {/* Join CTA — always visible on mobile, hover-only on desktop */}
         <div 
           className={`flex items-center justify-end gap-1 text-xs transition-opacity duration-200 opacity-100 sm:opacity-0 ${hovered ? 'sm:opacity-100' : ''}`}
-          style={{ color: 'hsl(258 90% 60%)' }}
+          style={{ color: '#0EA5E9' }}
         >
           <span className="tracking-widest">ENTER THREAD</span>
           <ArrowRight size={12} />

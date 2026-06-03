@@ -123,9 +123,9 @@ export default function Void() {
           <div 
             className="border p-5 space-y-4 void-card"
             style={{ 
-              borderColor: 'rgba(0,255,136,0.3)',
-              background: 'rgba(0,255,136,0.02)',
-              boxShadow: '0 0 30px rgba(0,255,136,0.06)'
+              borderColor: 'rgba(14,165,233,0.3)',
+              background: 'rgba(14,165,233,0.02)',
+              boxShadow: '0 0 30px rgba(14,165,233,0.06)'
             }}
           >
             <div className="flex items-center gap-2 text-primary text-xs tracking-widest">
@@ -178,9 +178,9 @@ export default function Void() {
               disabled={casting || !selectedPrompt}
               className="w-full py-2 text-xs tracking-widest font-bold transition-all disabled:opacity-50"
               style={{ 
-                background: 'rgba(0,255,136,0.1)',
-                border: '1px solid rgba(0,255,136,0.4)',
-                color: '#00FF88'
+                background: 'rgba(16,185,129,0.1)',
+                border: '1px solid rgba(16,185,129,0.4)',
+                color: '#10B981'
               }}
             >
               {casting ? 'CASTING...' : '◈ CAST INTO THE VOID ◈'}
