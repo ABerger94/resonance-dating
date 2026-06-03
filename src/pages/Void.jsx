@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { base44 } from '@/api/base44Client';
 import { MOCK_THREADS } from '@/lib/mockSeeder';
 import { getRandomPrompt } from '@/lib/promptEngine';
-import VoidThreadCard from '@/components/resonance/VoidThreadCard';
+import VoidBubble from '@/components/resonance/VoidBubble';
 import useResonanceStore from '@/lib/resonanceStore';
 import { Radio, Plus, X } from 'lucide-react';
 
@@ -11,6 +11,8 @@ export default function Void() {
   const navigate = useNavigate();
   const [threads, setThreads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const canvasRef = useRef(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 0, height: 0 });
   const [showCastForm, setShowCastForm] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState(null);
   const [customTags, setCustomTags] = useState('');
@@ -93,8 +95,19 @@ export default function Void() {
 
   const shufflePrompt = () => setSelectedPrompt(getRandomPrompt());
 
+  useEffect(() => {
+    const el = canvasRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => {
+      setCanvasSize({ width: el.offsetWidth, height: el.offsetHeight });
+    });
+    ro.observe(el);
+    setCanvasSize({ width: el.offsetWidth, height: el.offsetHeight });
+    return () => ro.disconnect();
+  }, []);
+
   return (
-    <div className="min-h-screen font-mono" style={{ background: 'hsl(var(--background))' }}>
+    <div className="flex flex-col font-mono" style={{ height: 'calc(100vh - 64px)', background: 'hsl(var(--background))' }}>
       {/* Header */}
       <div 
         className="border-b px-6 py-4"
@@ -119,16 +132,20 @@ export default function Void() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6 py-8 space-y-6">
-
-        {/* Cast form */}
-        {showCastForm && (
+      {/* Cast form — overlay panel */}
+      {showCastForm && (
+        <div className="border-b px-6 py-5 space-y-4"
+          style={{
+            borderColor: 'rgba(14,165,233,0.3)',
+            background: 'rgba(14,165,233,0.02)',
+          }}
+        >
+          <div className="max-w-2xl mx-auto space-y-4">
           <div 
-            className="border p-5 space-y-4 void-card"
+            className="border p-5 space-y-4"
             style={{ 
               borderColor: 'rgba(14,165,233,0.3)',
               background: 'rgba(14,165,233,0.02)',
-              boxShadow: '0 0 30px rgba(14,165,233,0.06)'
             }}
           >
             <div className="flex items-center gap-2 text-primary text-xs tracking-widest">
@@ -227,29 +244,44 @@ export default function Void() {
               {casting ? 'CASTING...' : '◈ CAST INTO THE VOID ◈'}
             </button>
           </div>
-        )}
+          </div>
+        </div>
+      )}
 
-        {/* Thread grid */}
+      {/* Floating bubble canvas */}
+      <div
+        ref={canvasRef}
+        className="flex-1 relative overflow-hidden"
+        style={{ background: 'hsl(var(--background))' }}
+      >
+        {/* Subtle void background grid */}
+        <div className="absolute inset-0 pointer-events-none" style={{
+          backgroundImage: 'radial-gradient(circle, rgba(14,165,233,0.04) 1px, transparent 1px)',
+          backgroundSize: '48px 48px',
+        }} />
+
         {loading ? (
-          <div className="text-muted-foreground/50 text-xs tracking-widest animate-pulse py-8 text-center">
-            SCANNING THE VOID...
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-muted-foreground/50 text-xs tracking-widest animate-pulse">
+              SCANNING THE VOID...
+            </div>
           </div>
         ) : threads.length === 0 ? (
-          <div className="text-center py-16 space-y-3">
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
             <div className="text-muted-foreground/30 text-xs tracking-widest">// VOID IS EMPTY</div>
             <div className="text-muted-foreground/20 text-xs">Cast the first thread to initiate contact.</div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-            {threads.map((thread, i) => (
-              <VoidThreadCard
-                key={thread.id}
-                thread={thread}
-                onJoin={handleJoinThread}
-                style={{ animationDelay: `${i * 80}ms` }}
-              />
-            ))}
-          </div>
+        ) : canvasSize.width > 0 && (
+          threads.map((thread, i) => (
+            <VoidBubble
+              key={thread.id}
+              thread={thread}
+              index={i}
+              onJoin={handleJoinThread}
+              containerWidth={canvasSize.width}
+              containerHeight={canvasSize.height}
+            />
+          ))
         )}
       </div>
     </div>
