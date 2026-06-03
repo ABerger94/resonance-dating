@@ -20,10 +20,12 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
+import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError, user, isAuthenticated } = useAuth();
   const setCurrentUser = useResonanceStore(s => s.setCurrentUser);
+  const profile = useResonanceStore(s => s.profile);
 
   // Sync auth user into Zustand store
   React.useEffect(() => {
@@ -61,12 +63,23 @@ const AuthenticatedApp = () => {
     );
   }
 
+  // Show onboarding if user doesn't have a profile yet
+  if (isAuthenticated && !profile) {
+    return (
+      <Routes>
+        <Route path="/onboarding" element={<OnboardingFlow />} />
+        <Route path="*" element={<Navigate to="/onboarding" replace />} />
+      </Routes>
+    );
+  }
+
   return (
     <Routes>
       <Route path="/login" element={<Navigate to="/void" replace />} />
       <Route path="/register" element={<Navigate to="/void" replace />} />
       <Route path="/forgot-password" element={<Navigate to="/void" replace />} />
       <Route path="/reset-password" element={<Navigate to="/void" replace />} />
+      <Route path="/onboarding" element={<Navigate to="/void" replace />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to="/void" replace />} />
         <Route path="/void" element={<Void />} />
