@@ -15,6 +15,8 @@ export default function Void() {
   const [selectedPrompt, setSelectedPrompt] = useState(null);
   const [customTags, setCustomTags] = useState('');
   const [casting, setCasting] = useState(false);
+  const [useCustomText, setUseCustomText] = useState(false);
+  const [customText, setCustomText] = useState('');
   const { seederEnabled, currentUser, currentProfile } = useResonanceStore();
 
   useEffect(() => {
@@ -63,15 +65,16 @@ export default function Void() {
     if (!selectedPrompt || !currentUser) return;
     setCasting(true);
     try {
+      const promptText = useCustomText ? customText.trim() : selectedPrompt.text;
       const tags = customTags 
         ? customTags.split(',').map(t => t.trim()).filter(Boolean)
-        : selectedPrompt.tags;
+        : (useCustomText ? [] : selectedPrompt.tags);
 
       const thread = await base44.entities.Thread.create({
         creator_id: currentUser.id,
         creator_handle: currentProfile?.handle || `NODE_${currentUser.id.slice(-4).toUpperCase()}`,
-        prompt_id: selectedPrompt.id,
-        prompt_text: selectedPrompt.text,
+        prompt_id: useCustomText ? null : selectedPrompt.id,
+        prompt_text: promptText,
         topic_tags: tags,
         status: 'void',
         resonance_state: 'locked',
@@ -133,49 +136,87 @@ export default function Void() {
               <span>CAST NEW THREAD INTO THE VOID</span>
             </div>
 
-            {/* Selected prompt display */}
-            <div 
-              className="p-4 border"
-              style={{ borderColor: 'hsl(var(--border))' }}
-            >
-              <div style={{ fontSize: '9px', color: '#555566', marginBottom: '8px' }}>
-                [{selectedPrompt?.category}] CHALLENGE PROMPT
-              </div>
-              <div className="text-sm text-foreground/90">
-                <span className="text-primary/50 mr-1">&gt;</span>
-                {selectedPrompt?.text}
-              </div>
-              <div className="flex flex-wrap gap-1 mt-3">
-                {selectedPrompt?.tags.map(tag => (
-                  <span key={tag} style={{ fontSize: '9px', color: '#444455', border: '1px solid #222233', padding: '2px 6px' }}>
-                    #{tag}
-                  </span>
-                ))}
-              </div>
+            {/* Toggle */}
+            <div className="flex items-center gap-0 border" style={{ borderColor: 'hsl(var(--border))', width: 'fit-content' }}>
+              <button
+                onClick={() => setUseCustomText(false)}
+                className="px-3 py-1.5 text-xs tracking-widest transition-all"
+                style={{
+                  background: !useCustomText ? 'rgba(14,165,233,0.15)' : 'transparent',
+                  color: !useCustomText ? 'hsl(var(--primary))' : 'hsl(215 20% 52%)',
+                  fontFamily: "'JetBrains Mono', monospace"
+                }}
+              >
+                USE PROMPT
+              </button>
+              <button
+                onClick={() => setUseCustomText(true)}
+                className="px-3 py-1.5 text-xs tracking-widest transition-all"
+                style={{
+                  background: useCustomText ? 'rgba(14,165,233,0.15)' : 'transparent',
+                  color: useCustomText ? 'hsl(var(--primary))' : 'hsl(215 20% 52%)',
+                  fontFamily: "'JetBrains Mono', monospace"
+                }}
+              >
+                WRITE YOUR OWN
+              </button>
             </div>
 
-            {/* Shuffle + custom tags */}
-            <div className="flex items-center gap-3">
-              <button
-                onClick={shufflePrompt}
-                className="px-3 py-1.5 border text-xs tracking-widest transition-all hover:border-primary/50 hover:text-primary"
-                style={{ borderColor: 'hsl(var(--border))' }}
-              >
-                ↻ SHUFFLE PROMPT
-              </button>
-              <input
-                type="text"
-                placeholder="custom tags (comma separated)"
-                value={customTags}
-                onChange={(e) => setCustomTags(e.target.value)}
-                className="flex-1 bg-transparent border px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/30 outline-none focus:border-primary/30"
+            {useCustomText ? (
+              /* Custom text input */
+              <textarea
+                placeholder="Ask something real. The more specific, the better the match."
+                value={customText}
+                onChange={(e) => setCustomText(e.target.value)}
+                rows={4}
+                className="w-full bg-transparent border px-3 py-3 text-sm text-foreground placeholder:text-muted-foreground/25 outline-none focus:border-primary/30 resize-none"
                 style={{ borderColor: 'hsl(var(--border))', fontFamily: "'JetBrains Mono', monospace" }}
               />
-            </div>
+            ) : (
+              <>
+                {/* Selected prompt display */}
+                <div
+                  className="p-4 border"
+                  style={{ borderColor: 'hsl(var(--border))' }}
+                >
+                  <div style={{ fontSize: '9px', color: '#555566', marginBottom: '8px' }}>
+                    [{selectedPrompt?.category}] CHALLENGE PROMPT
+                  </div>
+                  <div className="text-sm text-foreground/90">
+                    <span className="text-primary/50 mr-1">&gt;</span>
+                    {selectedPrompt?.text}
+                  </div>
+                  <div className="flex flex-wrap gap-1 mt-3">
+                    {selectedPrompt?.tags.map(tag => (
+                      <span key={tag} style={{ fontSize: '9px', color: '#444455', border: '1px solid #222233', padding: '2px 6px' }}>
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <button
+                  onClick={shufflePrompt}
+                  className="px-3 py-1.5 border text-xs tracking-widest transition-all hover:border-primary/50 hover:text-primary w-fit"
+                  style={{ borderColor: 'hsl(var(--border))' }}
+                >
+                  ↻ SHUFFLE PROMPT
+                </button>
+              </>
+            )}
+
+            {/* Tags */}
+            <input
+              type="text"
+              placeholder="tags (comma separated, optional)"
+              value={customTags}
+              onChange={(e) => setCustomTags(e.target.value)}
+              className="w-full bg-transparent border px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/30 outline-none focus:border-primary/30"
+              style={{ borderColor: 'hsl(var(--border))', fontFamily: "'JetBrains Mono', monospace" }}
+            />
 
             <button
               onClick={handleCastThread}
-              disabled={casting || !selectedPrompt}
+              disabled={casting || (useCustomText ? !customText.trim() : !selectedPrompt)}
               className="w-full py-2 text-xs tracking-widest font-bold transition-all disabled:opacity-50"
               style={{ 
                 background: 'rgba(16,185,129,0.1)',
