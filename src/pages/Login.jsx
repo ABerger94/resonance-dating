@@ -56,9 +56,10 @@ export default function Login() {
     setError("");
     try {
       await base44.auth.resendOtp(email);
+      base44.functions.invoke('resendVerificationEmail', { email }).catch(() => {});
       toast({
         title: "Code sent",
-        description: "Check your email for the new code.",
+        description: "Check your inbox and spam/junk folder for a 6-digit code.",
       });
     } catch (err) {
       setError(err.message || "Failed to resend code");
@@ -147,6 +148,9 @@ export default function Login() {
                     Back to login
                   </button>
                 </div>
+                <p className="text-center text-xs text-muted-foreground/60">
+                  Also check your spam or junk folder.
+                </p>
               </div>
             ) : (
             <form onSubmit={handleSubmit} className="space-y-4">

@@ -57,9 +57,11 @@ export default function Register() {
     setError("");
     try {
       await base44.auth.resendOtp(email);
+      // Also invoke backend helper to send a nudge email and surface deliverability tips
+      base44.functions.invoke('resendVerificationEmail', { email }).catch(() => {});
       toast({
         title: "Code sent",
-        description: "Check your email for the new code.",
+        description: "Check your inbox and spam/junk folder for a 6-digit code.",
       });
     } catch (err) {
       setError(err.message || "Failed to resend code");
@@ -119,6 +121,9 @@ export default function Register() {
           <button onClick={handleResend} className="text-primary font-medium hover:underline">
             Resend
           </button>
+        </p>
+        <p className="text-center text-xs text-muted-foreground/60 mt-2">
+          Also check your spam or junk folder.
         </p>
       </AuthLayout>
     );
