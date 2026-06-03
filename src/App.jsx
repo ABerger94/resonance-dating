@@ -6,6 +6,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import Layout from '@/components/Layout';
+import { ResonanceProvider } from '@/lib/resonanceStore';
 import Void from '@/pages/Void';
 import Sandbox from '@/pages/Sandbox';
 import Threads from '@/pages/Threads';
@@ -56,10 +57,12 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <Router>
-          <AuthenticatedApp />
-        </Router>
-        <Toaster />
+        <ResonanceProvider>
+          <Router>
+            <AuthenticatedApp />
+          </Router>
+          <Toaster />
+        </ResonanceProvider>
       </QueryClientProvider>
     </AuthProvider>
   )

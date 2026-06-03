@@ -1,103 +1,97 @@
-// Zustand store — ResonanceContext
-// Manages threads, interactions, profiles, and seeder state
+// ResonanceContext — global state using React Context + localStorage persistence
+import { createContext, useContext, useState, useEffect } from 'react';
 
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+const ResonanceContext = createContext(null);
 
-const useResonanceStore = create(
-  persist(
-    (set, get) => ({
-      // --- Auth/User ---
-      currentUser: null,
-      currentProfile: null,
+function loadFromStorage(key, fallback) {
+  try {
+    const raw = localStorage.getItem(`resonance:${key}`);
+    return raw !== null ? JSON.parse(raw) : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
-      setCurrentUser: (user) => set({ currentUser: user }),
-      setCurrentProfile: (profile) => set({ currentProfile: profile }),
+function saveToStorage(key, value) {
+  try {
+    localStorage.setItem(`resonance:${key}`, JSON.stringify(value));
+  } catch {}
+}
 
-      // --- Active Thread ---
-      activeThreadId: null,
-      setActiveThreadId: (id) => set({ activeThreadId: id }),
+export function ResonanceProvider({ children }) {
+  const [currentUser, setCurrentUser] = useState(null);
+  const [currentProfile, setCurrentProfile] = useState(null);
+  const [activeThreadId, setActiveThreadId] = useState(null);
+  const [threads, setThreads] = useState({});
+  const [interactions, setInteractions] = useState({});
+  const [profiles, setProfiles] = useState({});
+  const [animatedUnlocks, setAnimatedUnlocks] = useState(() => loadFromStorage('animatedUnlocks', {}));
+  const [seederEnabled, _setSeederEnabled] = useState(() => loadFromStorage('seederEnabled', false));
+  const [devMode, _setDevMode] = useState(() => loadFromStorage('devMode', false));
+  const [devSelectedMockId, setDevSelectedMockId] = useState(null);
+  const [devOverrideScore, setDevOverrideScore] = useState(null);
 
-      // --- Threads (local cache) ---
-      threads: {},
-      setThread: (thread) => set(state => ({
-        threads: { ...state.threads, [thread.id]: thread }
-      })),
-      updateThreadScore: (threadId, score, state_val) => set(state => ({
-        threads: {
-          ...state.threads,
-          [threadId]: {
-            ...state.threads[threadId],
-            resonance_score: score,
-            resonance_state: state_val
-          }
-        }
-      })),
+  const setSeederEnabled = (val) => {
+    _setSeederEnabled(val);
+    saveToStorage('seederEnabled', val);
+  };
 
-      // --- Interactions (local cache per thread) ---
-      interactions: {},
-      addInteraction: (interaction) => set(state => {
-        const threadId = interaction.thread_id;
-        const existing = state.interactions[threadId] || [];
-        return {
-          interactions: {
-            ...state.interactions,
-            [threadId]: [...existing, interaction]
-          }
-        };
-      }),
-      setInteractions: (threadId, interactions) => set(state => ({
-        interactions: {
-          ...state.interactions,
-          [threadId]: interactions
-        }
-      })),
-      getInteractionsForThread: (threadId) => {
-        return get().interactions[threadId] || [];
-      },
+  const setDevMode = (val) => {
+    _setDevMode(val);
+    saveToStorage('devMode', val);
+  };
 
-      // --- Profiles cache ---
-      profiles: {},
-      setProfile: (profile) => set(state => ({
-        profiles: { ...state.profiles, [profile.id || profile.mock_id]: profile }
-      })),
+  const setThread = (thread) => setThreads(prev => ({ ...prev, [thread.id]: thread }));
 
-      // --- Seeder state ---
-      seederEnabled: false,
-      setSeederEnabled: (val) => set({ seederEnabled: val }),
+  const updateThreadScore = (threadId, score, state_val) =>
+    setThreads(prev => ({
+      ...prev,
+      [threadId]: { ...prev[threadId], resonance_score: score, resonance_state: state_val }
+    }));
 
-      // --- Dev toolbar ---
-      devMode: false,
-      devSelectedMockId: null,
-      devOverrideScore: null,
-      setDevMode: (val) => set({ devMode: val }),
-      setDevSelectedMockId: (id) => set({ devSelectedMockId: id }),
-      setDevOverrideScore: (score) => set({ devOverrideScore: score }),
+  const addInteraction = (interaction) =>
+    setInteractions(prev => {
+      const threadId = interaction.thread_id;
+      return { ...prev, [threadId]: [...(prev[threadId] || []), interaction] };
+    });
 
-      // --- Unlock animation tracking ---
-      animatedUnlocks: {},
-      markUnlockAnimated: (threadId, field) => set(state => ({
-        animatedUnlocks: {
-          ...state.animatedUnlocks,
-          [threadId]: {
-            ...(state.animatedUnlocks[threadId] || {}),
-            [field]: true
-          }
-        }
-      })),
-      hasUnlockBeenAnimated: (threadId, field) => {
-        return !!(get().animatedUnlocks[threadId]?.[field]);
-      }
-    }),
-    {
-      name: 'resonance-session',
-      partialState: (state) => ({
-        seederEnabled: state.seederEnabled,
-        animatedUnlocks: state.animatedUnlocks,
-        devMode: state.devMode
-      })
-    }
-  )
-);
+  const setInteractionsForThread = (threadId, ints) =>
+    setInteractions(prev => ({ ...prev, [threadId]: ints }));
 
-export default useResonanceStore;
+  const getInteractionsForThread = (threadId) => interactions[threadId] || [];
+
+  const setProfile = (profile) =>
+    setProfiles(prev => ({ ...prev, [profile.id || profile.mock_id]: profile }));
+
+  const markUnlockAnimated = (threadId, field) => {
+    setAnimatedUnlocks(prev => {
+      const next = { ...prev, [threadId]: { ...(prev[threadId] || {}), [field]: true } };
+      saveToStorage('animatedUnlocks', next);
+      return next;
+    });
+  };
+
+  const hasUnlockBeenAnimated = (threadId, field) => !!(animatedUnlocks[threadId]?.[field]);
+
+  const value = {
+    currentUser, setCurrentUser,
+    currentProfile, setCurrentProfile,
+    activeThreadId, setActiveThreadId,
+    threads, setThread, updateThreadScore,
+    interactions, addInteraction, setInteractionsForThread, getInteractionsForThread,
+    profiles, setProfile,
+    animatedUnlocks, markUnlockAnimated, hasUnlockBeenAnimated,
+    seederEnabled, setSeederEnabled,
+    devMode, setDevMode,
+    devSelectedMockId, setDevSelectedMockId,
+    devOverrideScore, setDevOverrideScore,
+  };
+
+  return <ResonanceContext.Provider value={value}>{children}</ResonanceContext.Provider>;
+}
+
+export default function useResonanceStore() {
+  const ctx = useContext(ResonanceContext);
+  if (!ctx) throw new Error('useResonanceStore must be used within ResonanceProvider');
+  return ctx;
+}
