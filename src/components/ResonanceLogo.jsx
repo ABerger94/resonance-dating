@@ -1,9 +1,9 @@
 export default function ResonanceLogo({ size = 28, className = '' }) {
-  // Concentric arc pairs — left side opens right, right side opens left
-  // Each arc is a semicircle with a gap at top and bottom center
   const color = "hsl(199,89%,48%)";
-  const sw = 6.5;
-  const lc = "round";
+  const sw = 6;
+
+  // Each arc: left side curves LEFT (open right), right side curves RIGHT (open left)
+  // Gap in the center top and bottom via the arc endpoints stopping short of 50,0 / 50,100
 
   return (
     <svg
@@ -14,21 +14,43 @@ export default function ResonanceLogo({ size = 28, className = '' }) {
       xmlns="http://www.w3.org/2000/svg"
       className={className}
     >
-      {/* LEFT side arcs — open on the right, gap top+bottom */}
-      {/* Outer */}
-      <path d="M50 10 A40 40 0 0 0 50 90" stroke={color} strokeWidth={sw} strokeLinecap={lc} fill="none"/>
-      {/* Mid */}
-      <path d="M50 22 A28 28 0 0 0 50 78" stroke={color} strokeWidth={sw} strokeLinecap={lc} fill="none"/>
-      {/* Inner */}
-      <path d="M50 34 A16 16 0 0 0 50 66" stroke={color} strokeWidth={sw} strokeLinecap={lc} fill="none"/>
+      {/*
+        Left arcs: center-point is (50,50), arcs go from top-left to bottom-left
+        Each arc starts at a point to the LEFT of center-top and ends LEFT of center-bottom
+        leaving a vertical gap at x=50
+      */}
 
-      {/* RIGHT side arcs — open on the left, gap top+bottom */}
-      {/* Outer */}
-      <path d="M50 10 A40 40 0 0 1 50 90" stroke={color} strokeWidth={sw} strokeLinecap={lc} fill="none"/>
-      {/* Mid */}
-      <path d="M50 22 A28 28 0 0 1 50 78" stroke={color} strokeWidth={sw} strokeLinecap={lc} fill="none"/>
-      {/* Inner */}
-      <path d="M50 34 A16 16 0 0 1 50 66" stroke={color} strokeWidth={sw} strokeLinecap={lc} fill="none"/>
+      {/* Outer left arc — radius ~42, gap ~8px either side of center */}
+      <path
+        d="M 42 8 A 42 42 0 0 0 42 92"
+        stroke={color} strokeWidth={sw} strokeLinecap="round" fill="none"
+      />
+      {/* Mid left arc — radius ~28 */}
+      <path
+        d="M 38 22 A 28 28 0 0 0 38 78"
+        stroke={color} strokeWidth={sw} strokeLinecap="round" fill="none"
+      />
+      {/* Inner left arc — radius ~14 */}
+      <path
+        d="M 36 36 A 14 14 0 0 0 36 64"
+        stroke={color} strokeWidth={sw} strokeLinecap="round" fill="none"
+      />
+
+      {/* Outer right arc */}
+      <path
+        d="M 58 8 A 42 42 0 0 1 58 92"
+        stroke={color} strokeWidth={sw} strokeLinecap="round" fill="none"
+      />
+      {/* Mid right arc */}
+      <path
+        d="M 62 22 A 28 28 0 0 1 62 78"
+        stroke={color} strokeWidth={sw} strokeLinecap="round" fill="none"
+      />
+      {/* Inner right arc */}
+      <path
+        d="M 64 36 A 14 14 0 0 1 64 64"
+        stroke={color} strokeWidth={sw} strokeLinecap="round" fill="none"
+      />
     </svg>
   );
 }
