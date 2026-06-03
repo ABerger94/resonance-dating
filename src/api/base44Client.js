@@ -9,12 +9,41 @@ const STORAGE_KEY = 'resonance_local_base44';
 
 const nowIso = () => new Date().toISOString();
 const newId = (prefix) => `${prefix}_${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}`;
+const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
+const publicUser = (user) => {
+  if (!user) return null;
+  const { password, verification_code, verification_expires_at, ...safeUser } = user;
+  return safeUser;
+};
+
+function generateVerificationCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+async function sendVerificationEmail(email, code) {
+  const response = await fetch('/api/send-verification-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code })
+  });
+  if (!response.ok) {
+    let message = 'Could not send verification code.';
+    try {
+      const body = await response.json();
+      message = body.error || message;
+    } catch {
+      // Keep the default message.
+    }
+    throw new Error(message);
+  }
+}
 
 const DEFAULT_USER = {
   id: 'local_user',
   email: 'local@resonance.app',
   role: 'user',
-  full_name: 'Local User'
+  full_name: 'Local User',
+  email_verified: false
 };
 
 function readDb() {
@@ -23,6 +52,9 @@ function readDb() {
     if (raw) {
       const db = JSON.parse(raw);
       if (db.currentUser?.id === DEFAULT_USER.id) {
+        db.currentUser = null;
+      }
+      if (db.currentUser?.email_verified !== true) {
         db.currentUser = null;
       }
       return db;
@@ -140,35 +172,115 @@ function createStandaloneClient() {
           error.status = 401;
           throw error;
         }
+        if (db.currentUser.email_verified !== true) {
+          db.currentUser = null;
+          writeDb(db);
+          const error = new Error('Email verification required');
+          error.status = 403;
+          error.code = 'email_not_verified';
+          throw error;
+        }
         return db.currentUser;
       },
 
-      async loginViaEmailPassword(email) {
+      async loginViaEmailPassword(email, password) {
         const db = readDb();
-        let user = db.users.find((item) => item.email === email);
-        if (!user) {
-          user = { id: newId('user'), email, role: 'user', full_name: email.split('@')[0] };
-          db.users.push(user);
+        const normalizedEmail = normalizeEmail(email);
+        const user = db.users.find((item) => item.email === normalizedEmail);
+        if (!user || (user.password && user.password !== password)) {
+          const error = new Error('Invalid email or password');
+          error.status = 401;
+          throw error;
         }
-        db.currentUser = user;
+        if (user.email_verified !== true) {
+          const error = new Error('Verify your email before logging in.');
+          error.status = 403;
+          error.code = 'email_not_verified';
+          throw error;
+        }
+        db.currentUser = publicUser(user);
         writeDb(db);
         return { access_token: `local_${user.id}` };
       },
 
-      async register({ email }) {
+      async register({ email, password }) {
         const db = readDb();
-        if (!db.users.some((item) => item.email === email)) {
-          db.users.push({ id: newId('user'), email, role: 'user', full_name: email.split('@')[0] });
-          writeDb(db);
+        const normalizedEmail = normalizeEmail(email);
+        const verificationCode = generateVerificationCode();
+        const verificationExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+        const existingIndex = db.users.findIndex((item) => item.email === normalizedEmail);
+        const user = {
+          ...(existingIndex >= 0 ? db.users[existingIndex] : {}),
+          id: existingIndex >= 0 ? db.users[existingIndex].id : newId('user'),
+          email: normalizedEmail,
+          password,
+          role: existingIndex >= 0 ? db.users[existingIndex].role : 'user',
+          full_name: normalizedEmail.split('@')[0],
+          email_verified: false,
+          verification_code: verificationCode,
+          verification_expires_at: verificationExpiresAt
+        };
+        if (existingIndex >= 0) {
+          db.users[existingIndex] = user;
+        } else {
+          db.users.push(user);
         }
-        return { ok: true };
+        db.currentUser = null;
+        writeDb(db);
+        await sendVerificationEmail(normalizedEmail, verificationCode);
+        return { ok: true, verification_required: true };
       },
 
-      async verifyOtp({ email }) {
-        return this.loginViaEmailPassword(email);
+      async verifyOtp({ email, otpCode }) {
+        const db = readDb();
+        const normalizedEmail = normalizeEmail(email);
+        const userIndex = db.users.findIndex((item) => item.email === normalizedEmail);
+        const user = db.users[userIndex];
+        if (!user) {
+          const error = new Error('Account not found');
+          error.status = 404;
+          throw error;
+        }
+        if (user.verification_code !== String(otpCode || '').trim()) {
+          const error = new Error('Invalid verification code');
+          error.status = 400;
+          throw error;
+        }
+        if (Date.parse(user.verification_expires_at || '') < Date.now()) {
+          const error = new Error('Verification code expired');
+          error.status = 400;
+          throw error;
+        }
+        const verifiedUser = {
+          ...user,
+          email_verified: true,
+          verification_code: undefined,
+          verification_expires_at: undefined
+        };
+        db.users[userIndex] = verifiedUser;
+        db.currentUser = publicUser(verifiedUser);
+        writeDb(db);
+        return { access_token: `local_${verifiedUser.id}` };
       },
 
-      async resendOtp() {
+      async resendOtp(email) {
+        const db = readDb();
+        const normalizedEmail = normalizeEmail(email);
+        const userIndex = db.users.findIndex((item) => item.email === normalizedEmail);
+        if (userIndex === -1) {
+          const error = new Error('Account not found');
+          error.status = 404;
+          throw error;
+        }
+        const verificationCode = generateVerificationCode();
+        db.users[userIndex] = {
+          ...db.users[userIndex],
+          email_verified: false,
+          verification_code: verificationCode,
+          verification_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+        };
+        writeDb(db);
+        await sendVerificationEmail(normalizedEmail, verificationCode);
         return { ok: true };
       },
 

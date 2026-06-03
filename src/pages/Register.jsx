@@ -29,11 +29,6 @@ export default function Register() {
     setLoading(true);
     try {
       await base44.auth.register({ email, password });
-      if (base44.isStandalone) {
-        await base44.auth.loginViaEmailPassword(email, password);
-        window.location.href = "/";
-        return;
-      }
       setShowOtp(true);
     } catch (err) {
       setError(err.message || "Registration failed");
