@@ -6,28 +6,28 @@
 
 @layer base {
   :root {
-    /* #F8FAFC – Slate-50 canvas */
-    --background: 210 40% 98%;
-    /* #1E293B – Slate-800 text */
-    --foreground: 215 41% 18%;
-    --card: 0 0% 100%;
-    --card-foreground: 215 41% 18%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 41% 18%;
+    /* Dark slate background — terminal aesthetic */
+    --background: 215 18% 10%;
+    /* Light slate text for contrast */
+    --foreground: 210 40% 96%;
+    --card: 215 17% 16%;
+    --card-foreground: 210 40% 96%;
+    --popover: 215 17% 16%;
+    --popover-foreground: 210 40% 96%;
     /* #0EA5E9 – Sky-600 primary/resonance accent */
     --primary: 199 89% 48%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 30% 94%;
-    --secondary-foreground: 215 41% 25%;
-    --muted: 210 30% 95%;
-    --muted-foreground: 215 20% 52%;
+    --primary-foreground: 215 18% 10%;
+    --secondary: 215 17% 22%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 215 15% 24%;
+    --muted-foreground: 210 15% 60%;
     /* #F59E0B – Amber-500 accent/human */
     --accent: 38 92% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 215 18% 10%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 210 30% 90%;
-    --input: 210 30% 95%;
+    --destructive-foreground: 215 18% 10%;
+    --border: 215 15% 22%;
+    --input: 215 17% 18%;
     --ring: 199 89% 48%;
     --radius: 0.5rem;
     --font-heading: 'JetBrains Mono', ui-monospace, monospace;
@@ -36,35 +36,35 @@
     --font-mono: 'JetBrains Mono', ui-monospace, monospace;
     /* Emerald-500 success color as a CSS var for inline use */
     --success: 160 84% 39%;
-    --sidebar-background: 210 40% 96%;
-    --sidebar-foreground: 215 41% 18%;
+    --sidebar-background: 215 18% 10%;
+    --sidebar-foreground: 210 40% 96%;
     --sidebar-primary: 199 89% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 30% 92%;
-    --sidebar-accent-foreground: 215 41% 18%;
-    --sidebar-border: 210 30% 90%;
+    --sidebar-primary-foreground: 215 18% 10%;
+    --sidebar-accent: 215 17% 22%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 215 15% 22%;
     --sidebar-ring: 199 89% 48%;
   }
 
   .dark {
-    --background: 210 40% 98%;
-    --foreground: 215 41% 18%;
-    --card: 0 0% 100%;
-    --card-foreground: 215 41% 18%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 215 41% 18%;
+    --background: 215 18% 10%;
+    --foreground: 210 40% 96%;
+    --card: 215 17% 16%;
+    --card-foreground: 210 40% 96%;
+    --popover: 215 17% 16%;
+    --popover-foreground: 210 40% 96%;
     --primary: 199 89% 48%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 210 30% 94%;
-    --secondary-foreground: 215 41% 25%;
-    --muted: 210 30% 95%;
-    --muted-foreground: 215 20% 52%;
+    --primary-foreground: 215 18% 10%;
+    --secondary: 215 17% 22%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 215 15% 24%;
+    --muted-foreground: 210 15% 60%;
     --accent: 38 92% 50%;
-    --accent-foreground: 0 0% 100%;
+    --accent-foreground: 215 18% 10%;
     --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 210 30% 90%;
-    --input: 210 30% 95%;
+    --destructive-foreground: 215 18% 10%;
+    --border: 215 15% 22%;
+    --input: 215 17% 18%;
     --ring: 199 89% 48%;
   }
 }
