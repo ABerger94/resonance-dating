@@ -29,8 +29,6 @@ export default function Register() {
     setLoading(true);
     try {
       await base44.auth.register({ email, password });
-      // Fire-and-forget nudge email to help users find the OTP (checks spam etc.)
-      base44.functions.invoke('resendVerificationEmail', { email }).catch(() => {});
       setShowOtp(true);
     } catch (err) {
       setError(err.message || "Registration failed");
@@ -59,8 +57,6 @@ export default function Register() {
     setError("");
     try {
       await base44.auth.resendOtp(email);
-      // Also invoke backend helper to send a nudge email and surface deliverability tips
-      base44.functions.invoke('resendVerificationEmail', { email }).catch(() => {});
       toast({
         title: "Code sent",
         description: "Check your inbox and spam/junk folder for a 6-digit code.",
