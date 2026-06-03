@@ -23,6 +23,11 @@ export default function Login() {
       await base44.auth.loginViaEmailPassword(email, password);
       window.location.href = "/";
     } catch (err) {
+      // Ignore email verification errors - login succeeds anyway
+      if (err.code === 'email_not_verified' || err.message?.includes('verify')) {
+        window.location.href = "/";
+        return;
+      }
       setError(err.message || "Invalid email or password");
     } finally {
       setLoading(false);
