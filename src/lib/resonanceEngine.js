@@ -97,16 +97,16 @@ export function getResonanceState(score) {
 export function getUnlockedFields(score) {
   return {
     name: score >= 25,
-    bio: score >= 50,
-    interests: score >= 75,
+    interests: score >= 50,
+    bio: score >= 75,
     photo: score >= 100
   };
 }
 
 export function getNextUnlock(score) {
   if (score < 25) return { field: 'name', threshold: 25 };
-  if (score < 50) return { field: 'bio', threshold: 50 };
-  if (score < 75) return { field: 'interests', threshold: 75 };
+  if (score < 50) return { field: 'interests', threshold: 50 };
+  if (score < 75) return { field: 'bio', threshold: 75 };
   if (score < 100) return { field: 'photo', threshold: 100 };
   return null;
 }

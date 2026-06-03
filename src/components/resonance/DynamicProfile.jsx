@@ -135,7 +135,7 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
           />
         </UnlockedField>
       ) : (
-        <RedactedBlock label="BIO [50%]" icon={FileText} />
+        <RedactedBlock label="BIO [75%]" icon={FileText} />
       )}
 
       {/* INTERESTS */}
@@ -163,7 +163,7 @@ export default function DynamicProfile({ profile, score, threadId, previousScore
           </div>
         </UnlockedField>
       ) : (
-        <RedactedBlock label="INTERESTS [75%]" icon={Tag} />
+        <RedactedBlock label="INTERESTS [50%]" icon={Tag} />
       )}
 
       {/* PHOTO */}

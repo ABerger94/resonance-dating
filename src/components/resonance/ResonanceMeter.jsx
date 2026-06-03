@@ -42,8 +42,8 @@ export default function ResonanceMeter({ score = 0, className = '' }) {
 
   const thresholds = [
     { score: 25, label: 'NAME', reached: score >= 25 },
-    { score: 50, label: 'BIO', reached: score >= 50 },
-    { score: 75, label: 'INTS', reached: score >= 75 },
+    { score: 50, label: 'INTS', reached: score >= 50 },
+    { score: 75, label: 'BIO', reached: score >= 75 },
     { score: 100, label: 'PHOTO', reached: score >= 100 },
   ];
 

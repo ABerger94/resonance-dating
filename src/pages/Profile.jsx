@@ -114,8 +114,8 @@ export default function Profile() {
       </button>
     )},
     { key: 'display_name', label: 'REAL NAME', placeholder: 'Your actual name', hint: 'Unlocked to others at 25% resonance.', locked: true },
-    { key: 'bio', label: 'BIO', placeholder: 'Tell the truth about yourself...', hint: 'Unlocked at 50% resonance.', locked: true, multiline: true },
-    { key: 'interests', label: 'INTERESTS', placeholder: 'philosophy, jazz, mycology...', hint: 'Comma-separated. Unlocked at 75% resonance.', locked: true },
+    { key: 'interests', label: 'INTERESTS', placeholder: 'philosophy, jazz, mycology...', hint: 'Comma-separated. Unlocked at 50% resonance.', locked: true },
+    { key: 'bio', label: 'BIO', placeholder: 'Tell the truth about yourself...', hint: 'Unlocked at 75% resonance.', locked: true, multiline: true },
     { key: 'photo_url', label: 'PHOTO', hint: 'Upload a photo. Unlocked at 100% resonance — full resonance only.', locked: true, isPhoto: true },
     { key: 'tag_cloud', label: 'SIGNAL TAGS', placeholder: 'tech, philosophy, music...', hint: 'Always visible in the Void. Shows your intellectual signature.' }
   ];
