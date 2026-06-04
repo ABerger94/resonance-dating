@@ -6,7 +6,6 @@ const { appId, token, functionsVersion, appBaseUrl } = appParams;
 const hasBase44Config = Boolean(appId && appBaseUrl);
 
 const STORAGE_KEY = 'resonance_local_base44';
-const REAL_DATA_PURGE_KEY = 'resonance_real_data_purge_2026_06_03';
 
 const nowIso = () => new Date().toISOString();
 const newId = (prefix) => `${prefix}_${crypto.randomUUID?.() || Math.random().toString(36).slice(2)}`;
@@ -16,6 +15,7 @@ const publicUser = (user) => {
   const { password, verification_code, verification_expires_at, ...safeUser } = user;
   return safeUser;
 };
+const apiError = (message, status, code) => Object.assign(new Error(message), { status, code });
 
 const DEFAULT_USER = {
   id: 'local_user',
@@ -36,26 +36,12 @@ function readDb() {
       if (db.currentUser?.email_verified !== true) {
         db.currentUser = null;
       }
-      if (localStorage.getItem(REAL_DATA_PURGE_KEY) !== 'complete') {
-        db.currentUser = null;
-        db.users = [DEFAULT_USER];
-        db.entities = {
-          ...db.entities,
-          UserProfile: (db.entities?.UserProfile || []).filter((profile) => profile.is_mock === true),
-          PrivateProfile: (db.entities?.PrivateProfile || []).filter((profile) => profile.user_id?.startsWith('mock_')),
-          Thread: (db.entities?.Thread || []).filter((thread) => thread.is_mock === true),
-          Interaction: (db.entities?.Interaction || []).filter((interaction) => interaction.is_mock === true)
-        };
-        writeDb(db);
-        localStorage.setItem(REAL_DATA_PURGE_KEY, 'complete');
-      }
       return db;
     }
   } catch {
     // Fall through to a clean local store.
   }
 
-  localStorage.setItem(REAL_DATA_PURGE_KEY, 'complete');
   return {
     currentUser: null,
     users: [DEFAULT_USER],
@@ -161,17 +147,12 @@ function createStandaloneClient() {
       async me() {
         const db = readDb();
         if (!db.currentUser) {
-          const error = new Error('Authentication required');
-          error.status = 401;
-          throw error;
+          throw apiError('Authentication required', 401);
         }
         if (db.currentUser.email_verified !== true) {
           db.currentUser = null;
           writeDb(db);
-          const error = new Error('Email verification required');
-          error.status = 403;
-          error.code = 'email_not_verified';
-          throw error;
+          throw apiError('Email verification required', 403, 'email_not_verified');
         }
         return db.currentUser;
       },
@@ -181,9 +162,7 @@ function createStandaloneClient() {
         const normalizedEmail = normalizeEmail(email);
         const user = db.users.find((item) => item.email === normalizedEmail);
         if (!user || (user.password && user.password !== password)) {
-          const error = new Error('Invalid email or password');
-          error.status = 401;
-          throw error;
+          throw apiError('Invalid email or password', 401);
         }
         const verifiedUser = user.email_verified === true ? user : {
           ...user,
@@ -229,19 +208,13 @@ function createStandaloneClient() {
         const userIndex = db.users.findIndex((item) => item.email === normalizedEmail);
         const user = db.users[userIndex];
         if (!user) {
-          const error = new Error('Account not found');
-          error.status = 404;
-          throw error;
+          throw apiError('Account not found', 404);
         }
         if (user.verification_code !== String(otpCode || '').trim()) {
-          const error = new Error('Invalid verification code');
-          error.status = 400;
-          throw error;
+          throw apiError('Invalid verification code', 400);
         }
         if (Date.parse(user.verification_expires_at || '') < Date.now()) {
-          const error = new Error('Verification code expired');
-          error.status = 400;
-          throw error;
+          throw apiError('Verification code expired', 400);
         }
         const verifiedUser = {
           ...user,
@@ -260,9 +233,7 @@ function createStandaloneClient() {
         const normalizedEmail = normalizeEmail(email);
         const userIndex = db.users.findIndex((item) => item.email === normalizedEmail);
         if (userIndex === -1) {
-          const error = new Error('Account not found');
-          error.status = 404;
-          throw error;
+          throw apiError('Account not found', 404);
         }
         db.users[userIndex] = {
           ...db.users[userIndex],
@@ -280,6 +251,18 @@ function createStandaloneClient() {
       },
 
       async resetPassword() {
+        return { ok: true };
+      },
+
+      async deleteAccount(userId) {
+        const db = readDb();
+        const targetUserId = userId || db.currentUser?.id;
+        if (!targetUserId) {
+          throw apiError('Authentication required', 401);
+        }
+        db.users = db.users.filter((user) => user.id !== targetUserId);
+        db.currentUser = null;
+        writeDb(db);
         return { ok: true };
       },
 

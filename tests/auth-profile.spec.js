@@ -79,3 +79,38 @@ test('user can log out and create a profile for a new account', async ({ page })
   expect(stored.entities.PrivateProfile).toHaveLength(1);
   expect(stored.entities.UserProfile[0].user_id).toBe(stored.currentUser.id);
 });
+
+test('user can delete their account from settings', async ({ page }) => {
+  await resetLocalAuth(page);
+  const email = `delete-user-${Date.now()}@example.com`;
+  const password = 'correct horse battery staple';
+
+  await page.goto('/register', { waitUntil: 'domcontentloaded' });
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Password', { exact: true }).fill(password);
+  await page.getByLabel('Confirm Password').fill(password);
+  await page.getByRole('button', { name: 'Create account' }).click();
+  await expect(page).toHaveURL(/\/profile$/);
+
+  await page.getByPlaceholder('Brooklyn, NY or 40.6782,-73.9442').fill('Brooklyn, NY');
+  await page.getByPlaceholder('tech, philosophy, music...').fill('music, books');
+  await page.getByRole('button', { name: /CREATE PROFILE/ }).click();
+  await expect(page.getByText('PROFILE SAVED')).toBeVisible();
+
+  await page.goto('/settings', { waitUntil: 'domcontentloaded' });
+  await expect(page.getByRole('button', { name: /^DELETE ACCOUNT$/ })).toBeVisible();
+  await page.getByLabel('TYPE DELETE TO CONFIRM').fill('DELETE');
+  await page.getByRole('button', { name: /^DELETE ACCOUNT$/ }).click();
+  await expect(page).toHaveURL(/\/login$/);
+
+  const stored = await page.evaluate((key) => JSON.parse(window.localStorage.getItem(key)), localDbKey);
+  expect(stored.currentUser).toBeNull();
+  expect(stored.users.some((user) => user.email === email)).toBe(false);
+  expect(stored.entities.UserProfile).toHaveLength(0);
+  expect(stored.entities.PrivateProfile).toHaveLength(0);
+
+  await page.getByLabel('Email').fill(email);
+  await page.getByLabel('Password').fill(password);
+  await page.getByRole('button', { name: 'Log in' }).click();
+  await expect(page.getByText('Invalid email or password')).toBeVisible();
+});

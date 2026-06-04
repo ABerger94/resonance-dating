@@ -5,7 +5,7 @@ import { useAuth } from '@/lib/AuthContext';
 import useResonanceStore from '@/lib/resonanceStore';
 import { clampMatchRadiusMiles, resolveCoordinates, DEFAULT_MATCH_RADIUS_MILES } from '@/lib/location';
 import { clampAge, normalizeGenderPreference, normalizePreferenceAges, normalizeSex } from '@/lib/profilePreferences';
-import { LogOut, MapPin, Save, Settings as SettingsIcon, User, Mail, CheckCircle, AlertCircle } from 'lucide-react';
+import { LogOut, MapPin, Save, Settings as SettingsIcon, User, Mail, CheckCircle, AlertCircle, Trash2 } from 'lucide-react';
 
 export default function UserSettings() {
   const { user, logout } = useAuth();
@@ -30,6 +30,8 @@ export default function UserSettings() {
   const [verificationCode, setVerificationCode] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState('');
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -150,6 +152,52 @@ export default function UserSettings() {
       setError('Could not save settings.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const deleteRecords = async (entityApi, records) => {
+    for (const record of records) {
+      await entityApi.delete(record.id);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!activeUser || deleteConfirmation !== 'DELETE') return;
+
+    setDeletingAccount(true);
+    setError('');
+    try {
+      const userId = activeUser.id;
+      const [profiles, privateProfiles, createdThreads, joinedThreads, sentInteractions] = await Promise.all([
+        base44.entities.UserProfile.filter({ user_id: userId }),
+        base44.entities.PrivateProfile.filter({ user_id: userId }),
+        base44.entities.Thread.filter({ creator_id: userId }),
+        base44.entities.Thread.filter({ joiner_id: userId }),
+        base44.entities.Interaction.filter({ sender_id: userId })
+      ]);
+
+      const threads = Array.from(new Map([...createdThreads, ...joinedThreads].map((thread) => [thread.id, thread])).values());
+      const threadInteractions = [];
+      for (const thread of threads) {
+        threadInteractions.push(...await base44.entities.Interaction.filter({ thread_id: thread.id }));
+      }
+      const interactions = Array.from(new Map([...sentInteractions, ...threadInteractions].map((interaction) => [interaction.id, interaction])).values());
+
+      await deleteRecords(base44.entities.Interaction, interactions);
+      await deleteRecords(base44.entities.Thread, threads);
+      await deleteRecords(base44.entities.PrivateProfile, privateProfiles);
+      await deleteRecords(base44.entities.UserProfile, profiles);
+
+      if (typeof base44.auth.deleteAccount === 'function') {
+        await base44.auth.deleteAccount(userId);
+      }
+
+      setCurrentProfile(null);
+      logout(true);
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'Could not delete account.');
+      setDeletingAccount(false);
     }
   };
 
@@ -403,6 +451,38 @@ export default function UserSettings() {
               >
                 <Save size={12} />
                 {saving ? 'SAVING...' : saved ? 'SETTINGS SAVED' : 'SAVE SETTINGS'}
+              </button>
+            </div>
+
+            <div className="border p-4 space-y-4" style={{ borderColor: 'rgba(239,68,68,0.35)', background: 'rgba(239,68,68,0.04)' }}>
+              <div className="flex items-center gap-2 text-xs tracking-widest text-destructive">
+                <Trash2 size={12} />
+                DELETE ACCOUNT
+              </div>
+              <div className="text-xs leading-5 text-muted-foreground">
+                This permanently removes your account data, profile, private profile details, threads, and messages from Resonance.
+              </div>
+              <label className="block space-y-2">
+                <span className="text-xs tracking-widest text-muted-foreground">TYPE DELETE TO CONFIRM</span>
+                <input
+                  type="text"
+                  value={deleteConfirmation}
+                  onChange={event => setDeleteConfirmation(event.target.value)}
+                  className="w-full bg-transparent border px-3 py-2 text-base text-foreground placeholder:text-muted-foreground/20 outline-none focus:border-destructive/50"
+                  style={{ borderColor: 'rgba(239,68,68,0.35)', fontFamily: "'JetBrains Mono', monospace" }}
+                />
+              </label>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deletingAccount || deleteConfirmation !== 'DELETE'}
+                className="flex items-center justify-center gap-2 w-full py-2.5 text-xs tracking-widest font-bold transition-all border disabled:opacity-50"
+                style={{
+                  borderColor: 'rgba(239,68,68,0.5)',
+                  color: '#ef4444'
+                }}
+              >
+                <Trash2 size={12} />
+                {deletingAccount ? 'DELETING...' : 'DELETE ACCOUNT'}
               </button>
             </div>
           </>
