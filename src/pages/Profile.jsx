@@ -5,7 +5,6 @@ import { clampMatchRadiusMiles, resolveCoordinates, DEFAULT_MATCH_RADIUS_MILES }
 import { clampAge, normalizeGenderPreference, normalizePreferenceAges, normalizeSex } from '@/lib/profilePreferences';
 import { useAuth } from '@/lib/AuthContext';
 import { Check, CornerDownRight, LockKeyhole, LogOut, RefreshCw, TriangleAlert, Upload, User, X } from 'lucide-react';
-import { clearPendingRegistration, loadPendingRegistration } from '@/lib/pendingRegistration';
 
 const MAX_PROFILE_PHOTOS = 6;
 const MAX_PROFILE_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -23,8 +22,9 @@ function normalizePhotoUrls(profile) {
 }
 
 export default function Profile() {
-  const { currentUser, currentProfile, setCurrentUser, setCurrentProfile } = useResonanceStore();
-  const { logout, checkUserAuth } = useAuth();
+  const { currentUser, setCurrentProfile } = useResonanceStore();
+  const { logout, user: authUser } = useAuth();
+  const activeUser = currentUser || authUser;
   const [form, setForm] = useState({
     handle: '',
     display_name: '',
@@ -51,13 +51,13 @@ export default function Profile() {
 
   useEffect(() => {
     loadProfile();
-  }, [currentUser]);
+  }, [activeUser?.id]);
 
   const loadProfile = async () => {
-    if (!currentUser) return;
+    if (!activeUser) return;
     try {
-      const profiles = await base44.entities.UserProfile.filter({ user_id: currentUser.id });
-      const privateProfiles = await base44.entities.PrivateProfile.filter({ user_id: currentUser.id });
+      const profiles = await base44.entities.UserProfile.filter({ user_id: activeUser.id });
+      const privateProfiles = await base44.entities.PrivateProfile.filter({ user_id: activeUser.id });
       const privateProfile = privateProfiles[0];
       if (privateProfile) setPrivateProfileId(privateProfile.id);
 
@@ -92,32 +92,17 @@ export default function Profile() {
   };
 
   const handleSave = async () => {
-    if (!currentUser) return;
+    if (!activeUser) {
+      setSaveError('You must be logged in to create a profile.');
+      return;
+    }
     setSaving(true);
     setSaveError('');
     try {
-      let userForProfile = currentUser;
-      const pendingRegistration = loadPendingRegistration();
-      if (!profileId && currentUser.pending_registration && !pendingRegistration) {
-        throw new Error('Registration details expired. Please go back to registration and try again.');
-      }
-      if (!profileId && pendingRegistration?.email && pendingRegistration?.password) {
-        const registration = await base44.auth.register(pendingRegistration);
-        if (registration?.access_token) {
-          base44.auth.setToken(registration.access_token);
-        }
-        if (registration?.user) {
-          userForProfile = registration.user;
-          setCurrentUser(registration.user);
-        }
-        clearPendingRegistration();
-        await checkUserAuth();
-      }
-
       const coordinates = resolveCoordinates(form.location);
       const preferenceAges = normalizePreferenceAges(form.preference_min_age, form.preference_max_age);
       const publicData = {
-        user_id: userForProfile.id,
+        user_id: activeUser.id,
         handle: form.handle,
         tag_cloud: form.tag_cloud.split(',').map(s => s.trim()).filter(Boolean),
         location: form.location.trim(),
@@ -132,7 +117,7 @@ export default function Profile() {
         is_mock: false
       };
       const privateData = {
-        user_id: userForProfile.id,
+        user_id: activeUser.id,
         display_name: form.display_name,
         bio: form.bio,
         interests: form.interests.split(',').map(s => s.trim()).filter(Boolean),

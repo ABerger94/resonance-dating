@@ -1,8 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
-import { loadPendingRegistration } from '@/lib/pendingRegistration';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -46,22 +45,6 @@ export const AuthProvider = ({ children }) => {
       setAuthChecked(true);
     } catch (error) {
       console.error('User auth check failed:', error);
-      const pendingRegistration = loadPendingRegistration();
-      if (pendingRegistration?.email) {
-        setUser({
-          id: 'pending_registration',
-          email: pendingRegistration.email,
-          role: 'user',
-          full_name: pendingRegistration.email.split('@')[0],
-          email_verified: true,
-          pending_registration: true
-        });
-        setIsLoadingAuth(false);
-        setAuthChecked(true);
-        setIsAuthenticated(true);
-        setAuthError(null);
-        return;
-      }
       setIsLoadingAuth(false);
       setAuthChecked(true);
       setIsAuthenticated(false);
@@ -76,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     
     if (shouldRedirect) {
       // Use the SDK's logout method which handles token cleanup and redirect
-      base44.auth.logout(window.location.href);
+      base44.auth.logout('/login');
     } else {
       // Just remove the token without redirect
       base44.auth.logout();
