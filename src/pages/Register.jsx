@@ -6,7 +6,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2, KeyRound } from "lucide-react";
 import ResonanceLogo from "@/components/ResonanceLogo";
-import GoogleIcon from "@/components/GoogleIcon";
 
 export default function Register() {
   const [step, setStep] = useState("form"); // "form" | "otp"
@@ -16,12 +15,17 @@ export default function Register() {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [resendMsg, setResendMsg] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
     if (password !== confirmPassword) {
-      setError("Passwords do not match");
+      setError("Passwords do not match.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters.");
       return;
     }
     setLoading(true);
@@ -29,13 +33,13 @@ export default function Register() {
       await base44.auth.register({ email, password });
       setStep("otp");
     } catch (err) {
-      setError(err.message || "Registration failed. Try again.");
+      setError(err.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleVerifyOtp = async (e) => {
+  const handleVerify = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
@@ -52,21 +56,20 @@ export default function Register() {
 
   const handleResend = async () => {
     setError("");
+    setResendMsg("");
     try {
       await base44.auth.resendOtp(email);
+      setResendMsg("Code resent — check your inbox.");
     } catch (err) {
       setError(err.message || "Failed to resend code.");
     }
   };
 
-  const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", "/");
-  };
-
   return (
     <main className="auth-inverted min-h-screen bg-background text-foreground">
       <div className="min-h-screen grid lg:grid-cols-[1.05fr_0.95fr]">
-        {/* Left branding panel */}
+
+        {/* Left branding */}
         <section className="flex min-h-[42vh] flex-col justify-between border-b border-border px-6 py-8 lg:min-h-screen lg:border-b-0 lg:border-r lg:px-12">
           <div className="flex items-center gap-3">
             <ResonanceLogo size={42} className="text-white [&_path]:stroke-white" color="currentColor" />
@@ -86,32 +89,15 @@ export default function Register() {
           </div>
         </section>
 
-        {/* Right form panel */}
+        {/* Right form */}
         <section className="flex items-center justify-center px-6 py-10 lg:px-12">
           <div className="w-full max-w-sm">
+
             {step === "form" ? (
               <>
                 <div className="mb-8">
                   <h2 className="text-2xl font-semibold tracking-tight">Create account</h2>
                   <p className="mt-2 text-sm text-muted-foreground">Join Resonance. No photos required.</p>
-                </div>
-
-                <Button
-                  variant="outline"
-                  className="w-full h-12 text-sm font-medium mb-6"
-                  onClick={handleGoogle}
-                >
-                  <GoogleIcon className="w-5 h-5 mr-2" />
-                  Continue with Google
-                </Button>
-
-                <div className="relative mb-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-border" />
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-3 text-muted-foreground">or</span>
-                  </div>
                 </div>
 
                 {error && (
@@ -120,7 +106,7 @@ export default function Register() {
                   </div>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleRegister} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
                     <div className="relative">
@@ -138,6 +124,7 @@ export default function Register() {
                       />
                     </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="password">Password</Label>
                     <div className="relative">
@@ -154,6 +141,7 @@ export default function Register() {
                       />
                     </div>
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="confirm">Confirm Password</Label>
                     <div className="relative">
@@ -170,31 +158,28 @@ export default function Register() {
                       />
                     </div>
                   </div>
+
                   <Button type="submit" className="h-12 w-full font-medium" disabled={loading}>
-                    {loading ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating account...</>
-                    ) : (
-                      "Create account"
-                    )}
+                    {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating account...</> : "Create account"}
                   </Button>
                 </form>
 
                 <p className="mt-6 text-center text-sm text-muted-foreground">
                   Already have an account?{" "}
-                  <Link to="/login" className="font-medium text-primary hover:underline">
-                    Log in
-                  </Link>
+                  <Link to="/login" className="font-medium text-primary hover:underline">Log in</Link>
                 </p>
               </>
             ) : (
               <>
                 <div className="mb-8">
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center border border-primary/30 bg-primary/5">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center border border-primary/30 bg-primary/5">
                     <KeyRound className="h-5 w-5 text-primary" />
                   </div>
-                  <h2 className="text-2xl font-semibold tracking-tight">Verify your email</h2>
+                  <h2 className="text-2xl font-semibold tracking-tight">Check your email</h2>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    We sent a code to <span className="text-foreground font-medium">{email}</span>. Enter it below.
+                    We sent a 6-digit code to{" "}
+                    <span className="font-medium text-foreground">{email}</span>.
+                    Enter it below to verify your account.
                   </p>
                 </div>
 
@@ -203,8 +188,13 @@ export default function Register() {
                     {error}
                   </div>
                 )}
+                {resendMsg && (
+                  <div className="mb-4 border border-primary/30 bg-primary/5 p-3 text-sm text-primary">
+                    {resendMsg}
+                  </div>
+                )}
 
-                <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <form onSubmit={handleVerify} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="otp">Verification Code</Label>
                     <Input
@@ -212,33 +202,35 @@ export default function Register() {
                       type="text"
                       inputMode="numeric"
                       autoFocus
-                      placeholder="000000"
+                      placeholder="123456"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                      className="h-12 text-center text-lg tracking-widest"
+                      className="h-12 text-center text-xl tracking-[0.5em] font-mono"
                       required
                     />
                   </div>
-                  <Button type="submit" className="h-12 w-full font-medium" disabled={loading || otp.length < 4}>
-                    {loading ? (
-                      <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying...</>
-                    ) : (
-                      "Verify & Continue"
-                    )}
+                  <Button
+                    type="submit"
+                    className="h-12 w-full font-medium"
+                    disabled={loading || otp.length < 4}
+                  >
+                    {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Verifying...</> : "Verify & Continue"}
                   </Button>
                 </form>
 
-                <p className="mt-4 text-center text-sm text-muted-foreground">
-                  Didn't get it?{" "}
-                  <button onClick={handleResend} className="font-medium text-primary hover:underline">
-                    Resend code
-                  </button>
-                </p>
-                <p className="mt-2 text-center text-xs text-muted-foreground">
-                  <button onClick={() => setStep("form")} className="hover:underline">
-                    ← Use a different email
-                  </button>
-                </p>
+                <div className="mt-5 space-y-2 text-center text-sm text-muted-foreground">
+                  <p>
+                    Didn't get it?{" "}
+                    <button onClick={handleResend} className="font-medium text-primary hover:underline">
+                      Resend code
+                    </button>
+                  </p>
+                  <p>
+                    <button onClick={() => { setStep("form"); setError(""); setOtp(""); setResendMsg(""); }} className="text-xs hover:underline">
+                      ← Use a different email
+                    </button>
+                  </p>
+                </div>
               </>
             )}
           </div>

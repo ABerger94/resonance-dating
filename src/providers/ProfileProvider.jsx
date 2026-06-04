@@ -15,17 +15,18 @@ export function ProfileProvider({ children, user }) {
       setIsReady(true);
       return;
     }
-    fetchProfile(user.id);
+    loadProfile(user.id);
   }, [user?.id]);
 
-  const fetchProfile = async (userId) => {
+  const loadProfile = async (userId) => {
+    setIsReady(false);
     try {
       const results = await base44.entities.UserProfile.filter({ user_id: userId }, '-created_date', 1);
       const found = results[0] || null;
       setProfile(found);
       if (found) setCurrentProfile(found);
     } catch (e) {
-      console.error('Failed to fetch profile:', e);
+      console.error('ProfileProvider: failed to load profile', e);
       setProfile(null);
     } finally {
       setIsReady(true);
@@ -38,7 +39,7 @@ export function ProfileProvider({ children, user }) {
   };
 
   return (
-    <ProfileContext.Provider value={{ profile, isReady, refreshProfile }}>
+    <ProfileContext.Provider value={{ profile, isReady, refreshProfile, reloadProfile: () => user && loadProfile(user.id) }}>
       {children}
     </ProfileContext.Provider>
   );

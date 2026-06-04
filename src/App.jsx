@@ -1,40 +1,45 @@
-import { Toaster } from "@/components/ui/toaster"
-import { QueryClientProvider } from '@tanstack/react-query'
-import { queryClientInstance } from '@/lib/query-client'
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import { ProfileProvider, useProfileContext } from '@/providers/ProfileProvider';
-import PageNotFound from './lib/PageNotFound';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClientInstance } from '@/lib/query-client';
+import { Toaster } from '@/components/ui/toaster';
+
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
-import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import Layout from '@/components/Layout';
+import { ProfileProvider, useProfileContext } from '@/providers/ProfileProvider';
 import useResonanceStore from '@/lib/resonanceStore';
 import { canUseAdminTools } from '@/lib/security';
-import Void from '@/pages/Void';
-import Sandbox from '@/pages/Sandbox';
-import Threads from '@/pages/Threads';
-import Profile from '@/pages/Profile';
-import Settings from '@/pages/Settings';
-import UserSettings from '@/pages/UserSettings';
+
+import Layout from '@/components/Layout';
+import PageNotFound from '@/lib/PageNotFound';
+import UserNotRegisteredError from '@/components/UserNotRegisteredError';
+
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import ForgotPassword from '@/pages/ForgotPassword';
 import ResetPassword from '@/pages/ResetPassword';
 import OnboardingFlow from '@/components/onboarding/OnboardingFlow';
 
-const AuthenticatedApp = () => {
-  const { isLoadingAuth, isLoadingPublicSettings, authError, user, isAuthenticated } = useAuth();
-  const setCurrentUser = useResonanceStore(s => s.setCurrentUser);
+import Void from '@/pages/Void';
+import Sandbox from '@/pages/Sandbox';
+import Threads from '@/pages/Threads';
+import Profile from '@/pages/Profile';
+import UserSettings from '@/pages/UserSettings';
+import Settings from '@/pages/Settings';
+
+function AppRoutes() {
+  const { user, isAuthenticated, isLoadingAuth } = useAuth();
   const { profile, isReady, refreshProfile } = useProfileContext();
+  const setCurrentUser = useResonanceStore(s => s.setCurrentUser);
 
   React.useEffect(() => {
     if (user) setCurrentUser(user);
   }, [user?.id]);
 
-  if (isLoadingPublicSettings || isLoadingAuth || !isReady) {
+  // Loading
+  if (isLoadingAuth || (isAuthenticated && !isReady)) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center font-mono">
-        <div className="space-y-3 text-center">
+      <div className="fixed inset-0 flex items-center justify-center font-mono bg-background">
+        <div className="text-center space-y-3">
           <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
           <div className="text-primary/50 text-xs tracking-widest animate-pulse">INITIALIZING...</div>
         </div>
@@ -42,12 +47,7 @@ const AuthenticatedApp = () => {
     );
   }
 
-  if (authError && authError.type !== 'auth_required') {
-    if (authError.type === 'user_not_registered') {
-      return <UserNotRegisteredError />;
-    }
-  }
-
+  // Not logged in — show auth pages
   if (!isAuthenticated) {
     return (
       <Routes>
@@ -60,23 +60,18 @@ const AuthenticatedApp = () => {
     );
   }
 
-  // Show onboarding if authenticated but no server-side profile yet
+  // Logged in but no profile — run onboarding
   if (!profile) {
-    return (
-      <OnboardingFlow
-        user={user}
-        onComplete={(newProfile) => refreshProfile(newProfile)}
-      />
-    );
+    return <OnboardingFlow user={user} onComplete={refreshProfile} />;
   }
 
+  // Fully authenticated + profile exists
   return (
     <Routes>
       <Route path="/login" element={<Navigate to="/void" replace />} />
       <Route path="/register" element={<Navigate to="/void" replace />} />
       <Route path="/forgot-password" element={<Navigate to="/void" replace />} />
       <Route path="/reset-password" element={<Navigate to="/void" replace />} />
-      <Route path="/onboarding" element={<Navigate to="/void" replace />} />
       <Route element={<Layout />}>
         <Route path="/" element={<Navigate to="/void" replace />} />
         <Route path="/void" element={<Void />} />
@@ -89,29 +84,26 @@ const AuthenticatedApp = () => {
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
-};
+}
 
-// Wrapper to pass user into ProfileProvider
-const AppWithProfile = () => {
+function AppWithProviders() {
   const { user } = useAuth();
   return (
     <ProfileProvider user={user}>
       <Router>
-        <AuthenticatedApp />
+        <AppRoutes />
       </Router>
     </ProfileProvider>
   );
-};
+}
 
-function App() {
+export default function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
-        <AppWithProfile />
+        <AppWithProviders />
         <Toaster />
       </QueryClientProvider>
     </AuthProvider>
   );
 }
-
-export default App;

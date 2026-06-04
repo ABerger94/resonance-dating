@@ -18,10 +18,13 @@ export default function OnboardingFlow({ user, onComplete }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  // Step 1 – Identity
   const [displayName, setDisplayName] = useState('');
   const [age, setAge] = useState('');
   const [sex, setSex] = useState('other');
+  // Step 2 – Location
   const [location, setLocation] = useState('');
+  // Step 3 – Preferences
   const [minAge, setMinAge] = useState(18);
   const [maxAge, setMaxAge] = useState(45);
   const [genderPref, setGenderPref] = useState('all');
@@ -30,14 +33,13 @@ export default function OnboardingFlow({ user, onComplete }) {
   const step = STEPS[stepIndex];
 
   const canAdvance = () => {
-    if (step === 'Identity') return displayName.trim().length >= 2 && age >= 18 && age <= 99;
+    if (step === 'Identity') return displayName.trim().length >= 2 && Number(age) >= 18 && Number(age) <= 99;
     if (step === 'Location') return location.trim().length >= 2;
     return true;
   };
 
   const handleNext = () => {
-    if (!canAdvance()) return;
-    setStepIndex(i => i + 1);
+    if (canAdvance()) setStepIndex(i => i + 1);
   };
 
   const handleBack = () => setStepIndex(i => i - 1);
@@ -58,12 +60,10 @@ export default function OnboardingFlow({ user, onComplete }) {
         match_radius_miles: radius,
         tag_cloud: [],
       });
-
       setCurrentProfile(profile);
       onComplete(profile);
     } catch (err) {
       setError(err.message || 'Failed to create profile. Please try again.');
-    } finally {
       setSaving(false);
     }
   };
@@ -71,15 +71,15 @@ export default function OnboardingFlow({ user, onComplete }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 font-mono">
       <div className="w-full max-w-md">
+
         {/* Header */}
         <div className="mb-8">
-          <div className="text-xs tracking-widest text-primary mb-1">RESONANCE // ONBOARDING</div>
-          <div className="flex items-center justify-between">
+          <div className="text-xs tracking-widest text-primary mb-1">RESONANCE // SETUP</div>
+          <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-semibold tracking-tight">{step}</h1>
             <span className="text-xs text-muted-foreground">{stepIndex + 1} / {STEPS.length}</span>
           </div>
-          {/* Progress bar */}
-          <div className="mt-4 h-px bg-border w-full">
+          <div className="h-px bg-border w-full">
             <div
               className="h-px bg-primary transition-all duration-300"
               style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }}
@@ -87,52 +87,50 @@ export default function OnboardingFlow({ user, onComplete }) {
           </div>
         </div>
 
-        {/* Step content */}
-        <div className="space-y-5">
-          {step === 'Identity' && (
-            <>
-              <div className="space-y-1.5">
-                <label className="text-xs tracking-widest text-muted-foreground">DISPLAY NAME</label>
-                <input
-                  className="w-full border border-border bg-transparent px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
-                  placeholder="What should people call you?"
-                  value={displayName}
-                  onChange={e => setDisplayName(e.target.value)}
-                  autoFocus
-                />
-                <p className="text-xs text-muted-foreground/60">This will be your real name — shown once resonance unlocks it</p>
-              </div>
+        {/* Step: Identity */}
+        {step === 'Identity' && (
+          <div className="space-y-5">
+            <div className="space-y-1.5">
+              <label className="text-xs tracking-widest text-muted-foreground">DISPLAY NAME</label>
+              <input
+                className="w-full border border-border bg-transparent px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
+                placeholder="Your real name (revealed after resonance)"
+                value={displayName}
+                onChange={e => setDisplayName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs tracking-widest text-muted-foreground">AGE</label>
+              <input
+                className="w-full border border-border bg-transparent px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
+                type="number"
+                min={18}
+                max={99}
+                placeholder="e.g. 28"
+                value={age}
+                onChange={e => setAge(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs tracking-widest text-muted-foreground">SEX</label>
+              <select
+                className="w-full border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
+                value={sex}
+                onChange={e => setSex(e.target.value)}
+              >
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="non_binary">Non-binary</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+        )}
 
-              <div className="space-y-1.5">
-                <label className="text-xs tracking-widest text-muted-foreground">AGE</label>
-                <input
-                  className="w-full border border-border bg-transparent px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
-                  type="number"
-                  min={18}
-                  max={99}
-                  placeholder="18"
-                  value={age}
-                  onChange={e => setAge(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs tracking-widest text-muted-foreground">SEX</label>
-                <select
-                  className="w-full border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
-                  value={sex}
-                  onChange={e => setSex(e.target.value)}
-                >
-                  <option value="female">Female</option>
-                  <option value="male">Male</option>
-                  <option value="non_binary">Non-binary</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-            </>
-          )}
-
-          {step === 'Location' && (
+        {/* Step: Location */}
+        {step === 'Location' && (
+          <div className="space-y-5">
             <div className="space-y-1.5">
               <label className="text-xs tracking-widest text-muted-foreground">LOCATION</label>
               <input
@@ -144,62 +142,62 @@ export default function OnboardingFlow({ user, onComplete }) {
               />
               <p className="text-xs text-muted-foreground/60">Used to show you nearby signals in the Void</p>
             </div>
-          )}
+          </div>
+        )}
 
-          {step === 'Preferences' && (
-            <>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs tracking-widest text-muted-foreground">MIN AGE</label>
-                  <input
-                    className="w-full border border-border bg-transparent px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
-                    type="number" min={18} max={99}
-                    value={minAge}
-                    onChange={e => setMinAge(parseInt(e.target.value, 10) || 18)}
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs tracking-widest text-muted-foreground">MAX AGE</label>
-                  <input
-                    className="w-full border border-border bg-transparent px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
-                    type="number" min={18} max={99}
-                    value={maxAge}
-                    onChange={e => setMaxAge(parseInt(e.target.value, 10) || 45)}
-                  />
-                </div>
-              </div>
-
+        {/* Step: Preferences */}
+        {step === 'Preferences' && (
+          <div className="space-y-5">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs tracking-widest text-muted-foreground">INTERESTED IN</label>
-                <select
-                  className="w-full border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
-                  value={genderPref}
-                  onChange={e => setGenderPref(e.target.value)}
-                >
-                  <option value="all">Everyone</option>
-                  <option value="female">Women</option>
-                  <option value="male">Men</option>
-                  <option value="non_binary">Non-binary</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="text-xs tracking-widest text-muted-foreground">MATCH RADIUS — {radius} miles</label>
+                <label className="text-xs tracking-widest text-muted-foreground">MIN AGE</label>
                 <input
-                  className="w-full accent-primary"
-                  type="range" min={5} max={500} step={5}
-                  value={radius}
-                  onChange={e => setRadius(parseInt(e.target.value, 10))}
+                  className="w-full border border-border bg-transparent px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
+                  type="number" min={18} max={99}
+                  value={minAge}
+                  onChange={e => setMinAge(parseInt(e.target.value, 10) || 18)}
                 />
-                <div className="flex justify-between text-xs text-muted-foreground/50">
-                  <span>5 mi</span>
-                  <span>500 mi</span>
-                </div>
               </div>
-            </>
-          )}
-        </div>
+              <div className="space-y-1.5">
+                <label className="text-xs tracking-widest text-muted-foreground">MAX AGE</label>
+                <input
+                  className="w-full border border-border bg-transparent px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
+                  type="number" min={18} max={99}
+                  value={maxAge}
+                  onChange={e => setMaxAge(parseInt(e.target.value, 10) || 45)}
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs tracking-widest text-muted-foreground">INTERESTED IN</label>
+              <select
+                className="w-full border border-border bg-background px-3 py-2.5 text-sm outline-none focus:border-primary transition-colors"
+                value={genderPref}
+                onChange={e => setGenderPref(e.target.value)}
+              >
+                <option value="all">Everyone</option>
+                <option value="female">Women</option>
+                <option value="male">Men</option>
+                <option value="non_binary">Non-binary</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs tracking-widest text-muted-foreground">
+                MATCH RADIUS — {radius} miles
+              </label>
+              <input
+                className="w-full accent-primary"
+                type="range" min={5} max={500} step={5}
+                value={radius}
+                onChange={e => setRadius(parseInt(e.target.value, 10))}
+              />
+              <div className="flex justify-between text-xs text-muted-foreground/50">
+                <span>5 mi</span><span>500 mi</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="mt-4 border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
@@ -218,13 +216,12 @@ export default function OnboardingFlow({ user, onComplete }) {
               BACK
             </button>
           )}
-
           {stepIndex < STEPS.length - 1 ? (
             <button
               type="button"
               onClick={handleNext}
               disabled={!canAdvance()}
-              className="ml-auto border border-primary/40 bg-primary/5 px-6 py-2.5 text-xs tracking-widest text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              className="ml-auto border border-primary/50 bg-primary/5 px-6 py-2.5 text-xs tracking-widest text-primary hover:bg-primary/10 transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
             >
               NEXT →
             </button>
@@ -232,8 +229,8 @@ export default function OnboardingFlow({ user, onComplete }) {
             <button
               type="button"
               onClick={handleSubmit}
-              disabled={saving}
-              className="ml-auto border border-primary/60 bg-primary/10 px-6 py-2.5 text-xs tracking-widest text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+              disabled={saving || !canAdvance()}
+              className="ml-auto border border-primary/60 bg-primary/10 px-6 py-2.5 text-xs tracking-widest text-primary hover:bg-primary/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? 'CREATING...' : 'ENTER THE VOID →'}
             </button>

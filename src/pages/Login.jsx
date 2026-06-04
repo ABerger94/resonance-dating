@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Lock, Loader2 } from "lucide-react";
-
 import ResonanceLogo from "@/components/ResonanceLogo";
 
 export default function Login() {
@@ -14,37 +13,30 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      const loginResult = await base44.auth.loginViaEmailPassword(email, password);
-      if (loginResult?.access_token) {
-        base44.auth.setToken(loginResult.access_token);
-      }
+      await base44.auth.loginViaEmailPassword(email, password);
       window.location.href = "/";
     } catch (err) {
-      console.log('Login error:', err);
-      // Always redirect - platform may allow access even with verification pending
-      window.location.href = "/";
+      setError(err.message || "Invalid email or password.");
     } finally {
       setLoading(false);
     }
   };
 
-
-
   return (
     <main className="auth-inverted min-h-screen bg-background text-foreground">
       <div className="min-h-screen grid lg:grid-cols-[1.05fr_0.95fr]">
+
+        {/* Left branding */}
         <section className="flex min-h-[42vh] flex-col justify-between border-b border-border px-6 py-8 lg:min-h-screen lg:border-b-0 lg:border-r lg:px-12">
           <div className="flex items-center gap-3">
             <ResonanceLogo size={42} className="text-white [&_path]:stroke-white" color="currentColor" />
             <span className="font-mono text-sm font-bold tracking-[0.35em] text-white">RESONANCE</span>
           </div>
-
           <div className="max-w-xl space-y-5 py-12">
             <div className="flex items-center gap-3">
               <ResonanceLogo size={72} className="text-white [&_path]:stroke-white" color="currentColor" />
@@ -54,12 +46,12 @@ export default function Login() {
               Meet through conversation first. Build signal, reveal details gradually, and let connection earn context.
             </p>
           </div>
-
           <div className="hidden font-mono text-xs tracking-[0.25em] text-muted-foreground lg:block">
             SIGNAL BEFORE SURFACE
           </div>
         </section>
 
+        {/* Right form */}
         <section className="flex items-center justify-center px-6 py-10 lg:px-12">
           <div className="w-full max-w-sm">
             <div className="mb-8">
@@ -77,7 +69,7 @@ export default function Login() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                  <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
@@ -100,7 +92,7 @@ export default function Login() {
                   </Link>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+                  <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
@@ -115,22 +107,13 @@ export default function Login() {
               </div>
 
               <Button type="submit" className="h-12 w-full font-medium" disabled={loading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Logging in...
-                  </>
-                ) : (
-                  "Log in"
-                )}
+                {loading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Logging in...</> : "Log in"}
               </Button>
             </form>
 
             <p className="mt-6 text-center text-sm text-muted-foreground">
-              Don&apos;t have an account?{" "}
-              <Link to="/register" className="font-medium text-primary hover:underline">
-                Create one
-              </Link>
+              Don't have an account?{" "}
+              <Link to="/register" className="font-medium text-primary hover:underline">Create one</Link>
             </p>
           </div>
         </section>

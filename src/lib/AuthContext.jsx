@@ -1,83 +1,43 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { base44 } from '@/api/base44Client';
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingAuth, setIsLoadingAuth] = useState(true);
-  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
-  const [authError, setAuthError] = useState(null);
-  const [appPublicSettings, setAppPublicSettings] = useState(null);
 
   useEffect(() => {
-    checkAppState();
+    checkAuth();
   }, []);
 
-  const checkAppState = async () => {
+  const checkAuth = async () => {
     try {
-      setIsLoadingPublicSettings(true);
-      setAuthError(null);
-      setAppPublicSettings({ id: 'standalone', public_settings: {} });
-      setIsLoadingPublicSettings(false);
-      await checkUserAuth();
-    } catch (error) {
-      console.error('Unexpected error:', error);
-      setAuthError({ type: 'unknown', message: error.message || 'An unexpected error occurred' });
-      setIsLoadingPublicSettings(false);
-      setIsLoadingAuth(false);
-    }
-  };
-
-  const checkUserAuth = async () => {
-    try {
-      setIsLoadingAuth(true);
       const currentUser = await base44.auth.me();
       setUser(currentUser);
       setIsAuthenticated(true);
-    } catch (error) {
-      setIsAuthenticated(false);
+    } catch {
       setUser(null);
+      setIsAuthenticated(false);
     } finally {
       setIsLoadingAuth(false);
     }
   };
 
-  const logout = (shouldRedirect = true) => {
-    setUser(null);
-    setIsAuthenticated(false);
-    if (shouldRedirect) {
-      base44.auth.logout(window.location.href);
-    } else {
-      base44.auth.logout();
-    }
-  };
-
-  const navigateToLogin = () => {
-    base44.auth.redirectToLogin(window.location.href);
+  const logout = () => {
+    base44.auth.logout();
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isAuthenticated,
-      isLoadingAuth,
-      isLoadingPublicSettings,
-      authError,
-      appPublicSettings,
-      logout,
-      navigateToLogin,
-      checkUserAuth,
-      checkAppState
-    }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoadingAuth, logout, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within an AuthProvider');
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  return ctx;
 };
