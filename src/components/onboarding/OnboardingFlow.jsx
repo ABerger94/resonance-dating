@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { base44 } from '@/api/base44Client';
 import useResonanceStore from '@/lib/resonanceStore';
+import { useAuth } from '@/lib/AuthContext';
 
 const STEPS = ['Identity', 'Location', 'Preferences'];
 
@@ -13,6 +14,7 @@ function generateHandle() {
 
 export default function OnboardingFlow({ user, onComplete }) {
   const setCurrentProfile = useResonanceStore(s => s.setCurrentProfile);
+  const { logout } = useAuth();
 
   const [stepIndex, setStepIndex] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -74,7 +76,12 @@ export default function OnboardingFlow({ user, onComplete }) {
 
         {/* Header */}
         <div className="mb-8">
-          <div className="text-xs tracking-widest text-primary mb-1">RESONANCE // SETUP</div>
+          <div className="flex items-center justify-between mb-1">
+            <div className="text-xs tracking-widest text-primary">RESONANCE // SETUP</div>
+            <button onClick={logout} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              ← Log out
+            </button>
+          </div>
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-2xl font-semibold tracking-tight">{step}</h1>
             <span className="text-xs text-muted-foreground">{stepIndex + 1} / {STEPS.length}</span>
